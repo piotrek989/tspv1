@@ -46,43 +46,49 @@ void makeGraph::getFromFile(std::string nazwaPlikuWe, std::vector<std::vector<in
 
 
 
-void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density, bool isDirected, int V){
-    // Ustawienie grafu jako pustej macierzy sąsiedztwa
+void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density, bool isDirected, int V) {
+    if (density < 0 || density > 100 || V <= 0) {
+        std::cerr << "Invalid input parameters: density must be between 0 and 100, and V > 0.\n";
+        return;
+    }
+
+    // Inicjalizacja pustej macierzy sąsiedztwa
     graph.clear();
     graph.resize(V, std::vector<int>(V, -1));
 
-    // Obliczenie liczby krawędzi na podstawie gęstości
+    // Obliczenie maksymalnej liczby krawędzi i docelowej liczby krawędzi
     int maxEdges = isDirected ? V * (V - 1) : V * (V - 1) / 2;
     int targetEdges = (maxEdges * density) / 100;
 
-    // Zmienna licznikowa dla liczby krawędzi
+    // Generator liczb pseudolosowych
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distVertex(0, V - 1); // Zakres wierzchołków
+    std::uniform_int_distribution<> distWeight(1, 1000);  // Zakres wag krawędzi
+
+    // Dodawanie krawędzi
     int edgesAdded = 0;
 
-    // Losowanie krawędzi
-    srand(static_cast<unsigned int>(time(nullptr)));
-
     while (edgesAdded < targetEdges) {
-        int u = rand() % V; // Losowy wierzchołek początkowy
-        int v = rand() % V; // Losowy wierzchołek końcowy
+        int u = distVertex(gen); // Losowy wierzchołek początkowy
+        int v = distVertex(gen); // Losowy wierzchołek końcowy
+        int edgeWeight = distWeight(gen);
 
-        // Sprawdzamy, czy nie tworzymy pętli własnej lub duplikatów
-        int edgeWeight = rand() % 1000 + 1;
+        // Sprawdzanie warunków: brak pętli własnych i brak duplikatów
         if (u != v && graph[u][v] == -1) {
-
-            graph[u][v] = edgeWeight; // Dodajemy krawędź
+            graph[u][v] = edgeWeight;
             edgesAdded++;
 
             if (!isDirected) {
-                graph[v][u] = edgeWeight; // Dodajemy krawędź w obu kierunkach, jeśli graf nieskierowany
+                graph[v][u] = edgeWeight; // Krawędź w obu kierunkach
             }
         }
     }
 
-    // // Opcjonalne wyświetlenie wygenerowanego grafu (do debugowania)
     // std::cout << "Generated graph (adjacency matrix):\n";
     // for (const auto& row : graph) {
     //     for (int val : row) {
-    //         std::cout << val << " ";
+    //         std::cout<<val << " ";
     //     }
     //     std::cout << "\n";
     // }

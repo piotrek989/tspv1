@@ -1,5 +1,5 @@
-nazwa pliku wejsciowego:../Files/file_100a.txt
+nazwa pliku wejsciowego:../Files/file_171a.txt
 nazwa pliku wyjsciowego:..Files/output.txt
-test z pojedynczego pliku:true
+test z pojedynczego pliku:false
 liczba powtorzen algorytmow:1
 max czas wykonywania algorytmu[ms]:1000

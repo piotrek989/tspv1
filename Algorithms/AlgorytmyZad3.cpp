@@ -2,19 +2,16 @@
 // Created by Piotr on 11.12.2024.
 //
 
-#include "simulatedAnnealing.h"
+#include "AlgorytmyZad3.h"
 
 #include <climits>
 
 
-void simulatedAnnealing::SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float E_przerwania, float alfa) {//alg zwraca optymalne rozwiazanie
+void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float E_przerwania, float alfa) {//alg zwraca optymalne rozwiazanie
     float T = T_max;//inicjacja poczatkowej temperatury
     repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
-    std::cout<<"Najlepszy koszt: "<<lowestCost<<std::endl;
-    for(auto element : bestPath) {
-        std::cout<<element<<" ";
-    }
-    std::cout<<std::endl;
+
+    //printCostnPath();
     ////////////////////
     std::vector<int> initalPath = bestPath;
 
@@ -55,7 +52,7 @@ void simulatedAnnealing::SAlgorithm(std::vector<std::vector<int>>& graph, int V,
             }
         }
 
-        T *= 0.75;
+        T *= 0.995;
     }
     for(int i = 0 ; i < bestCosts.size() ; i++) {
         //std::cout<<i<<std::endl;
@@ -65,21 +62,94 @@ void simulatedAnnealing::SAlgorithm(std::vector<std::vector<int>>& graph, int V,
         }
     }
 
+    //printCostnPath();
 
+}
 
-    std::cout<<"Najlepszy koszt: "<<lowestCost<<std::endl;
-    for(auto element : bestPath) {
-        std::cout<<element<<" ";
+void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kandencja) {
+    repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
+
+    //printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
+
+    std::vector<std::pair<std::vector<int>, int>> listaTabu;
+
+    std::vector<int> currentSolution;
+
+    int i = 0;
+    while (i < 750) {
+        currentSolution = bestPath;//przypisanie przed kolejnymi epokami
+        std::pair<std::vector<int>, int> x;
+        x.first = currentSolution;
+        x.second = kandencja;
+        listaTabu.push_back(x);//dodanie do listy tabu nowego rozwiazania
+        for(int i = 0 ; i < V ; i++) {//odpowiada za generowanie wszystkich kombinacji
+            for(int j = i + 1; j < V ; j++) {
+                std::vector<int> temp = currentSolution;
+
+                if(i == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
+                    temp[temp.size() - 1] = temp[j];
+                }
+                std::swap(temp[i], temp[j]);
+                if(!ifInTabuList(listaTabu, temp)) {//sprawdzamy czy rozpatrywana rozw jest w liscie tabu - tak generujemy nowe - nie liczymy dalej
+                    int cost = 0;
+                    for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
+                        cost += graph[temp[k]][temp[k+1]];
+                    }
+                    cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
+
+                    if (cost < lowestCost) {
+                        lowestCost = cost;
+                        bestPath = temp;//zmiana dotychczasowego naj rozwiazania
+
+                    }
+                }
+
+            }
+
+        }
+        if (listaTabu.size() > sizeOfTabuList) listaTabu.erase(listaTabu.begin());
+
+        decrementCadency(listaTabu);
+        i++;
     }
-    std::cout<<std::endl;
+
+    //printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie
+}
+
+bool AlgorytmyZad3::ifInTabuList(std::vector<std::pair<std::vector<int>, int>> &tabuList, std::vector<int> rozwiazanie) {
+    for (const auto& tabuElement : tabuList) {
+        if (tabuElement.first == rozwiazanie) {
+            return true;
+        }
+    }
+    return false;
+}
 
 
+void AlgorytmyZad3::decrementCadency(std::vector<std::pair<std::vector<int>, int> > &tabuList) {
+    int n = tabuList.size();
+    for(int i = 0 ; i < n ; i++) {
+        tabuList[i].second--;
+        if(tabuList[i].second == 0)
+            tabuList.erase(tabuList.begin() + i);
+    }
 }
 
 
 
+void AlgorytmyZad3::printCostnPath() {
+    if(!bestPath.empty()) {
+        std::cout<<"Oto koszt: "<<lowestCost<<std::endl;
+        for(auto element : bestPath) {
+            std::cout<<element<<" ";
+        }
+        std::cout<<std::endl;
+    } else
+        std::cout<<"Lista jest pusta - BRAK WYNIKOW!!!"<<std::endl;
+}
 
-int simulatedAnnealing::nearestNeighbour(std::vector<std::vector<int>>& graph, int V, int start, std::vector<bool>& odwiedzone,
+
+int AlgorytmyZad3::nearestNeighbour(std::vector<std::vector<int>>& graph, int V, int start, std::vector<bool>& odwiedzone,
                           int current_cost, std::vector<int>& current_path,
                           std::vector<int>& best_path, int& best_cost) {
     if (odwiedzone[start] == false) {//ustawienie nextVertex przeslanego w rekrencyjnym wywolaniu na odwiedzony
@@ -142,7 +212,7 @@ int simulatedAnnealing::nearestNeighbour(std::vector<std::vector<int>>& graph, i
 }
 
 
-int simulatedAnnealing::repetetiveNearestNeighbour(std::vector<std::vector<int>>& graph, int V) {
+int AlgorytmyZad3::repetetiveNearestNeighbour(std::vector<std::vector<int>>& graph, int V) {
     std::vector<bool> odwiedzone(V, false);       // Na początku wszystkie wierzchołki nieodwiedzone
     int current_cost = 0;                         // Początkowy koszt trasy to 0
     std::vector<int> current_path;                // Początkowa trasa jest pusta
@@ -176,7 +246,7 @@ int simulatedAnnealing::repetetiveNearestNeighbour(std::vector<std::vector<int>>
     return lowestCost;
 }
 
-bool simulatedAnnealing::ifAllVisited(std::vector<bool> odwiedzone) {//metoda pomocniczna do NN
+bool AlgorytmyZad3::ifAllVisited(std::vector<bool> odwiedzone) {//metoda pomocniczna do NN
     for(int i = 0 ; i < odwiedzone.size() ; i++) {
         if (odwiedzone[i] == false) {
             return false;
@@ -185,3 +255,10 @@ bool simulatedAnnealing::ifAllVisited(std::vector<bool> odwiedzone) {//metoda po
     return true;
 
 }
+std::vector<int> AlgorytmyZad3::getBestPath() {
+    return bestPath;
+}
+int AlgorytmyZad3::getLowestCost() {
+    return lowestCost;
+}
+

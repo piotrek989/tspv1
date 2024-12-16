@@ -67,8 +67,8 @@ build CMakeFiles/zadanie_3.dir/mainProgram/Program.cpp.obj: CXX_COMPILER__zadani
   OBJECT_DIR = CMakeFiles\zadanie_3.dir
   OBJECT_FILE_DIR = CMakeFiles\zadanie_3.dir\mainProgram
 
-build CMakeFiles/zadanie_3.dir/Algorithms/simulatedAnnealing.cpp.obj: CXX_COMPILER__zadanie_3_unscanned_Debug C$:/Users/Piotr/CLionProjects/zadanie_3/Algorithms/simulatedAnnealing.cpp || cmake_object_order_depends_target_zadanie_3
-  DEP_FILE = CMakeFiles\zadanie_3.dir\Algorithms\simulatedAnnealing.cpp.obj.d
+build CMakeFiles/zadanie_3.dir/Algorithms/AlgorytmyZad3.cpp.obj: CXX_COMPILER__zadanie_3_unscanned_Debug C$:/Users/Piotr/CLionProjects/zadanie_3/Algorithms/AlgorytmyZad3.cpp || cmake_object_order_depends_target_zadanie_3
+  DEP_FILE = CMakeFiles\zadanie_3.dir\Algorithms\AlgorytmyZad3.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\zadanie_3.dir
   OBJECT_FILE_DIR = CMakeFiles\zadanie_3.dir\Algorithms
@@ -87,7 +87,7 @@ build CMakeFiles/zadanie_3.dir/mainProgram/Timer.cpp.obj: CXX_COMPILER__zadanie_
 #############################################
 # Link the executable zadanie_3.exe
 
-build zadanie_3.exe: CXX_EXECUTABLE_LINKER__zadanie_3_Debug CMakeFiles/zadanie_3.dir/mainProgram/main.cpp.obj CMakeFiles/zadanie_3.dir/Graph/makeGraph.cpp.obj CMakeFiles/zadanie_3.dir/mainProgram/Program.cpp.obj CMakeFiles/zadanie_3.dir/Algorithms/simulatedAnnealing.cpp.obj CMakeFiles/zadanie_3.dir/mainProgram/Timer.cpp.obj
+build zadanie_3.exe: CXX_EXECUTABLE_LINKER__zadanie_3_Debug CMakeFiles/zadanie_3.dir/mainProgram/main.cpp.obj CMakeFiles/zadanie_3.dir/Graph/makeGraph.cpp.obj CMakeFiles/zadanie_3.dir/mainProgram/Program.cpp.obj CMakeFiles/zadanie_3.dir/Algorithms/AlgorytmyZad3.cpp.obj CMakeFiles/zadanie_3.dir/mainProgram/Timer.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\zadanie_3.dir

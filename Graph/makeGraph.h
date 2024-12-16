@@ -5,9 +5,9 @@
 #ifndef MAKEGRAPH_H
 #define MAKEGRAPH_H
 #include <vector>
-#include <cstdlib>
-#include <ctime>
 #include <iostream>
+#include <random>
+#include <ctime>
 #include <fstream>
 
 class makeGraph {

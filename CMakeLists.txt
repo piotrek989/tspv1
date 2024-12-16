@@ -8,7 +8,7 @@ add_executable(zadanie_3 mainProgram/main.cpp
         Graph/makeGraph.h
         mainProgram/Program.cpp
         mainProgram/Program.h
-        Algorithms/simulatedAnnealing.cpp
-        Algorithms/simulatedAnnealing.h
+        Algorithms/AlgorytmyZad3.cpp
+        Algorithms/AlgorytmyZad3.h
         mainProgram/Timer.cpp
         mainProgram/Timer.h)

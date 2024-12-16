@@ -5,7 +5,7 @@
 #include "Program.h"
 
 #include "Timer.h"
-#include "../Algorithms/simulatedAnnealing.h"
+#include "../Algorithms/AlgorytmyZad3.h"
 
 Program::Program() {
 
@@ -74,23 +74,50 @@ void Program::glownyProgram() {
 
 
     std::vector<std::vector<int>> graph;
-    int V = 100;
+    int V = 50;
 
-    makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
-    if (ifFromFile) {
-        make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
-    }else {
-        make_graph.generateGraph(graph, 100, false, V);
+    int i = 0;
+    int korzyscSimANnealing = 0;
+    int korzyscTaboo = 0;
+    int takiesame = 0;
+    while(i < 50) {
+        makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
+        if (ifFromFile) {
+            make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
+        }else {
+            make_graph.generateGraph(graph, 100, false, V);
+        }
+
+        //std::cout<<std::endl;
+
+        Timer timer(maxCzasAlgorytmow);
+        AlgorytmyZad3 simulated_annealing;
+        timer.startCounter();
+        simulated_annealing.SAlgorithm(graph, V, 1000000.0, 0.0000001, 0.0, 0.0);
+        double t1 = timer.getCounter();
+        std::cout<<std::endl;
+        std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
+
+        AlgorytmyZad3 tabuSearch;
+        timer.startCounter();
+        tabuSearch.TS(graph, V, 50, 50);
+        double t2 = timer.getCounter();
+
+        std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
+        if(simulated_annealing.getLowestCost() > tabuSearch.getLowestCost())
+            korzyscTaboo++;
+        else if (simulated_annealing.getLowestCost() < tabuSearch.getLowestCost())
+            korzyscSimANnealing++;
+        else if (simulated_annealing.getLowestCost() == tabuSearch.getLowestCost()) {
+            takiesame++;
+        }
+
+        i++;
     }
-
-    //std::cout<<std::endl;
-
-    Timer timer(maxCzasAlgorytmow);
-    simulatedAnnealing simulated_annealing;
-    timer.startCounter();
-    simulated_annealing.SAlgorithm(graph, V, 1000000.0, 0.001, 0.0, 0.0);
-    double t1 = timer.getCounter();
-    std::cout<<"Czas trwania algorytmu: "<<t1<<"ms"<<std::endl;
+    std::cout<<"Najmniejsze koszty ile razy:"<<std::endl;
+    std::cout<<"SA: "<<korzyscSimANnealing<<std::endl;
+    std::cout<<"TS: "<<korzyscTaboo<<std::endl;
+    std::cout<<"Ile razy takie same: "<<takiesame<<std::endl;
 
 }
 
