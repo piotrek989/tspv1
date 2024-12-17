@@ -60,7 +60,11 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
     nazwaPlikuWejsciowego = konfiguracja["nazwa pliku wejsciowego:"];
     nazwaPlikuWyjsciowego = konfiguracja["nazwa pliku wyjsciowego:"];
     ifFromFile = stringToBool(konfiguracja["test z pojedynczego pliku:"]);
-
+    T_min = std::stof(konfiguracja["T_min:"]);
+    T_max = std::stof(konfiguracja["T_max:"]);
+    alfa = std::stof(konfiguracja["alfa:"]);
+    kadencja = std::stoi(konfiguracja["kadencja:"]);
+    wielkoscListyTabu = std::stoi(konfiguracja["dlugosc listy tabu:"]);
     plik.close();
 }
 
@@ -71,10 +75,15 @@ void Program::glownyProgram() {
     std::cout << "liczba powtorzen algorytmow: " << iteracjeAlgorytmow << "\n";
     std::cout<<"Nazwa pliku we: "<<nazwaPlikuWejsciowego<<std::endl;
     std::cout<<"Nazwa pliku wy: "<<nazwaPlikuWyjsciowego<<std::endl;
+    std::cout << "T_minimalna: " << T_min << std::endl;
+    std::cout << "T_maksymalna: " << T_max << std::endl;
+    std::cout << "Alfa: " << alfa << std::endl;
+    std::cout << "Kadencja: " << kadencja << std::endl;
+    std::cout << "Wielkosc listy tabu: " << wielkoscListyTabu << std::endl;
 
 
     std::vector<std::vector<int>> graph;
-    int V = 50;
+    int V = 120;
 
     int i = 0;
     int korzyscSimANnealing = 0;
@@ -93,7 +102,7 @@ void Program::glownyProgram() {
         Timer timer(maxCzasAlgorytmow);
         AlgorytmyZad3 simulated_annealing;
         timer.startCounter();
-        simulated_annealing.SAlgorithm(graph, V, 1000000.0, 0.0000001, 0.0, 0.0);
+        simulated_annealing.SAlgorithm(graph, V, 10000.0, 0.001, 0.0, 0.0);
         double t1 = timer.getCounter();
         std::cout<<std::endl;
         std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;

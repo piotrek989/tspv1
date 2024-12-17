@@ -6,7 +6,7 @@
 
 #include <climits>
 
-
+//uwaga dla grafu nieskierowanego alg dziala dobrze bo swapow jest n*(n-1)/2 ale w nieskierowanyn bedzie n*(n-1) ---> do uwaględnienia
 void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float E_przerwania, float alfa) {//alg zwraca optymalne rozwiazanie
     float T = T_max;//inicjacja poczatkowej temperatury
     repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
@@ -27,6 +27,7 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
                     temp[temp.size() - 1] = temp[j];
                 }
                 std::swap(temp[i], temp[j]);
+
                 int cost = 0;
                 for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
                     cost += graph[temp[k]][temp[k+1]];
@@ -52,7 +53,7 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
             }
         }
 
-        T *= 0.995;
+        T *= alfa;
     }
     for(int i = 0 ; i < bestCosts.size() ; i++) {
         //std::cout<<i<<std::endl;
@@ -68,6 +69,8 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
 
 void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kandencja) {
     repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
+    std::vector<int> bestCosts;
+    std::vector<std::vector<int>> bestPaths;
 
     //printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
 
@@ -76,6 +79,7 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
     std::vector<int> currentSolution;
 
     int i = 0;
+    int k = 0;
     while (i < 750) {
         currentSolution = bestPath;//przypisanie przed kolejnymi epokami
         std::pair<std::vector<int>, int> x;
@@ -90,17 +94,25 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
                     temp[temp.size() - 1] = temp[j];
                 }
                 std::swap(temp[i], temp[j]);
-                if(!ifInTabuList(listaTabu, temp)) {//sprawdzamy czy rozpatrywana rozw jest w liscie tabu - tak generujemy nowe - nie liczymy dalej
-                    int cost = 0;
-                    for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
-                        cost += graph[temp[k]][temp[k+1]];
-                    }
-                    cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
+                // if(!ifInTabuList(listaTabu, temp)) {//sprawdzamy czy rozpatrywana rozw jest w liscie tabu - tak generujemy nowe - nie liczymy dalej
+                int cost = 0;
+                for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
+                    cost += graph[temp[k]][temp[k+1]];
+                }
+                cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
 
-                    if (cost < lowestCost) {
+                bool isOnTabooList = ifInTabuList(listaTabu, temp);//zmienna przechowuje mi czy dane rozw jest na taboo liscie
+                if (cost < lowestCost) {//jesli nowe roz lepsze i nie na tabooList
+                    lowestCost = cost;
+                    bestPath = temp;//zmiana dotychczasowego naj rozwiazania
+                }else {
+                    k++;//zmienna dla mnie jedynie do trzymania tego czy juz chcemy brac gorsze rozwiazania
+                    if (!isOnTabooList && k == 5) {//gdy nie jest na liscie tabu
+                        bestCosts.push_back(lowestCost);
+                        bestPaths.push_back(bestPath);//dajemy aby na koniec i tak wybrac najlepszych z najlepszych
                         lowestCost = cost;
                         bestPath = temp;//zmiana dotychczasowego naj rozwiazania
-
+                        k = 0;//reset zmiennej k
                     }
                 }
 
@@ -110,9 +122,16 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
         if (listaTabu.size() > sizeOfTabuList) listaTabu.erase(listaTabu.begin());
 
         decrementCadency(listaTabu);
+        k++;
         i++;
     }
-
+    for(int i = 0 ; i < bestCosts.size() ; i++) {
+        //std::cout<<i<<std::endl;
+        if(bestCosts[i] < lowestCost) {
+            lowestCost = bestCosts[i];
+            bestPath = bestPaths[i];
+        }
+    }
     //printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie
 }
 
@@ -134,7 +153,6 @@ void AlgorytmyZad3::decrementCadency(std::vector<std::pair<std::vector<int>, int
             tabuList.erase(tabuList.begin() + i);
     }
 }
-
 
 
 void AlgorytmyZad3::printCostnPath() {

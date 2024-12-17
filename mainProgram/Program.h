@@ -17,6 +17,12 @@ class Program {
     int iteracjeAlgorytmow;
     int maxCzasAlgorytmow;
     int solutionFromFile;
+    float T_min;
+    float T_max;
+    float alfa;
+    int kadencja;
+    int wielkoscListyTabu;
+
     std::string nazwaPlikuWejsciowego;
     std::string nazwaPlikuWyjsciowego;
     bool ifFromFile;
