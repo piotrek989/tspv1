@@ -89,7 +89,7 @@ void Program::glownyProgram() {
     int korzyscSimANnealing = 0;
     int korzyscTaboo = 0;
     int takiesame = 0;
-    while(i < 50) {
+    while(i < 1) {
         makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
         if (ifFromFile) {
             make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
@@ -102,10 +102,14 @@ void Program::glownyProgram() {
         Timer timer(maxCzasAlgorytmow);
         AlgorytmyZad3 simulated_annealing;
         timer.startCounter();
-        simulated_annealing.SAlgorithm(graph, V, 10000.0, 0.001, 0.0, 0.0);
+        simulated_annealing.SAlgorithm(graph, V, T_max, T_min, 0.0, alfa);
         double t1 = timer.getCounter();
         std::cout<<std::endl;
         std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
+        for(int i = 0 ; i < simulated_annealing.getBestPath().size() ; i++) {
+            std::cout<<simulated_annealing.getBestPath()[i]<<" ";
+        }
+        std::cout<<std::endl;
 
         AlgorytmyZad3 tabuSearch;
         timer.startCounter();
@@ -113,6 +117,11 @@ void Program::glownyProgram() {
         double t2 = timer.getCounter();
 
         std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
+        for(int i = 0 ; i < tabuSearch.getBestPath().size() ; i++) {
+            std::cout<<tabuSearch.getBestPath()[i]<<" ";
+        }
+        std::cout<<std::endl;
+
         if(simulated_annealing.getLowestCost() > tabuSearch.getLowestCost())
             korzyscTaboo++;
         else if (simulated_annealing.getLowestCost() < tabuSearch.getLowestCost())

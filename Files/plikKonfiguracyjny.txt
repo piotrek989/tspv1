@@ -1,10 +1,10 @@
-nazwa pliku wejsciowego:../Files/file_100a.txt
+nazwa pliku wejsciowego:../Files/file_13s.txt
 nazwa pliku wyjsciowego:..Files/output.txt
-test z pojedynczego pliku:false
+test z pojedynczego pliku:true
 liczba powtorzen algorytmow:1
 max czas wykonywania algorytmu[ms]:1000
 T_min:0.00001
 T_max:1000000
 alfa:0.995
-dlugosc listy tabu:100
+dlugosc listy tabu:10
 kadencja:20
