@@ -7,12 +7,20 @@
 #include <climits>
 
 //uwaga dla grafu nieskierowanego alg dziala dobrze bo swapow jest n*(n-1)/2 ale w nieskierowanyn bedzie n*(n-1) ---> do uwaględnienia
-void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float E_przerwania, float alfa) {//alg zwraca optymalne rozwiazanie
+AlgorytmyZad3::AlgorytmyZad3(bool ifStartWithNN, bool ifGenerateWithSwap) : generateInitSolutionWithNn(ifStartWithNN), ifGenerateNeighbourhoodWithSwap(ifGenerateWithSwap){}
+
+
+void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float alfa) {
+    if(generateInitSolutionWithNn) {
+        repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
+    }else{
+        randomMethod(graph, V);
+    }
+
     float T = T_max;//inicjacja poczatkowej temperatury
-    repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
 
     //printCostnPath();
-    ////////////////////
+
     std::vector<int> initalPath = bestPath;
 
     std::vector<int> bestCosts;
@@ -20,19 +28,16 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
 
     while (T > T_min) {
         initalPath = bestPath;//przypisanie przed kolejnymi epokami
-        for(int i = 0 ; i < V ; i++) {//odpowiada za generowanie wszystkich kombinacji
+        for(int i = 0 ; i < V - 1; i++) {//odpowiada za generowanie wszystkich kombinacji
             for(int j = i + 1; j < V ; j++) {
                 std::vector<int> temp = initalPath;
-                if(i == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
-                    temp[temp.size() - 1] = temp[j];
+                int cost;
+                if(ifGenerateNeighbourhoodWithSwap) {//w zaleznosci od tej zmiennej generujemy sasiedztwo
+                    cost = swapMethod(graph, V, temp, i, j);//metoda swapujaca -- metoda jest tylko dobrze dzialajaca dla grafu pełnego
+                }else{
+                    cost = twoOpt(graph, V, temp, i , j);
                 }
-                std::swap(temp[i], temp[j]);
 
-                int cost = 0;
-                for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
-                    cost += graph[temp[k]][temp[k+1]];
-                }
-                cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
                 if (cost < lowestCost) {
                     lowestCost = cost;
                     bestPath = temp;//zmiana dotychczasowego naj rozwiazania
@@ -68,11 +73,16 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
 }
 
 void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kandencja) {
-    repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
+    if(generateInitSolutionWithNn) {
+        repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
+    }else{
+        randomMethod(graph, V);
+    }
+
     std::vector<int> bestCosts;
     std::vector<std::vector<int>> bestPaths;
 
-    //printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
+    printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
 
     std::vector<std::pair<std::vector<int>, int>> listaTabu;
 
@@ -86,20 +96,17 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
         x.first = currentSolution;
         x.second = kandencja;
         listaTabu.push_back(x);//dodanie do listy tabu nowego rozwiazania
-        for(int i = 0 ; i < V ; i++) {//odpowiada za generowanie wszystkich kombinacji
+        for(int i = 0 ; i < V - 1 ; i++) {//odpowiada za generowanie wszystkich kombinacji
             for(int j = i + 1; j < V ; j++) {
                 std::vector<int> temp = currentSolution;
 
-                if(i == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
-                    temp[temp.size() - 1] = temp[j];
+                int cost;
+                if(ifGenerateNeighbourhoodWithSwap) {//w zaleznosci od tej zmiennej generujemy sasiedztwo
+                    cost = swapMethod(graph, V, temp, i, j);//metoda swapujaca -- metoda jest tylko dobrze dzialajaca dla grafu pełnego
+                }else{
+                    cost = twoOpt(graph, V, temp, i , j);
                 }
-                std::swap(temp[i], temp[j]);
-                // if(!ifInTabuList(listaTabu, temp)) {//sprawdzamy czy rozpatrywana rozw jest w liscie tabu - tak generujemy nowe - nie liczymy dalej
-                int cost = 0;
-                for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
-                    cost += graph[temp[k]][temp[k+1]];
-                }
-                cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
+
 
                 bool isOnTabooList = ifInTabuList(listaTabu, temp);//zmienna przechowuje mi czy dane rozw jest na taboo liscie
                 if (cost < lowestCost) {//jesli nowe roz lepsze i nie na tabooList
@@ -132,7 +139,7 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
             bestPath = bestPaths[i];
         }
     }
-    //printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie
+//    printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie
 }
 
 bool AlgorytmyZad3::ifInTabuList(std::vector<std::pair<std::vector<int>, int>> &tabuList, std::vector<int> rozwiazanie) {
@@ -264,6 +271,81 @@ int AlgorytmyZad3::repetetiveNearestNeighbour(std::vector<std::vector<int>>& gra
     return lowestCost;
 }
 
+void AlgorytmyZad3::randomMethod(std::vector<std::vector<int>> &graph, int V) {
+    std::random_device rd;  // rd jest wykorzystywane do generowania losowej wartości (ziarno)
+    std::mt19937 g(rd());   // tworze generator liczb pseudolosowych, inicjalizowany wartością z urządzenia losowego
+
+    lowestCost = INT_MAX;//poczatkowa wartosc lowestCost
+    std::vector<int> tab_nieodwiedzonych(V);
+
+    for (int i = 0; i < V; i++) {  // indeksów tyle, ile wierzchołków
+        tab_nieodwiedzonych[i] = i;
+    }
+    int i = 0;
+    int iterations;
+    if(V > 0 && V <= 7)
+        iterations = 50;
+    else if (V >= 8 && V <= 13)
+        iterations = 200;
+    else
+        iterations = 500;
+
+    while (i < iterations) {
+        std::vector<int> currentPath;  // Ścieżka dla bieżącej iteracji
+        std::vector<int> temp_tab_nieodwiedzonych = tab_nieodwiedzonych;  // Tymczasowa lista wierzchołków do odwiedzenia
+        int score = 0;
+
+        for (int j = 0; j < V; j++) {
+            std::uniform_int_distribution<> dist(0, temp_tab_nieodwiedzonych.size() - 1);  // losowanie indeksu
+            int randIndex = dist(g);  // generowanie liczby z distribution liczb z zadanego wyżej przedziału
+
+            int currentNode = temp_tab_nieodwiedzonych[randIndex];
+            currentPath.push_back(currentNode);  // dodanie wierzchołka do ścieżki
+
+            if (j > 0) {
+                // Obliczamy wagę krawędzi między bieżącym a poprzednim wierzchołkiem
+                int prevNode = currentPath[j - 1];
+                int weight = graph[prevNode][currentNode];
+
+                // Sprawdzamy, czy istnieje połączenie
+                if (weight == -1) {
+                    // Brak połączenia - przechodzimy do następnej iteracji
+                    score = INT_MAX;
+                    break;
+                }
+                score += weight;
+            }
+
+            // Usuwamy odwiedzony wierzchołek z listy
+            temp_tab_nieodwiedzonych.erase(temp_tab_nieodwiedzonych.begin() + randIndex);
+        }
+
+        if (score != INT_MAX) {
+            // Łączymy ostatni wierzchołek z pierwszym, aby zamknąć cykl
+            int lastNode = currentPath.back();
+            int firstNode = currentPath.front();
+            int lastEdgeWeight = graph[lastNode][firstNode];
+
+            if (lastEdgeWeight != -1) {  // Jeśli połączenie istnieje
+                score += lastEdgeWeight;
+                currentPath.push_back(firstNode);  // Zamyka cykl
+
+                if (score < lowestCost) {
+                    lowestCost= score;
+                    bestPath = currentPath;
+
+//                    // Jeśli znaleziono rozwiązanie równe temu z pliku, kończymy algorytm
+//                    if (shortestpath == shortest_path_from_file) {
+//                        //if_ended_by_iterations = false;
+//                        return shortestpath;
+//                    }
+                }
+            }
+        }
+        i++;
+    }
+}
+
 bool AlgorytmyZad3::ifAllVisited(std::vector<bool> odwiedzone) {//metoda pomocniczna do NN
     for(int i = 0 ; i < odwiedzone.size() ; i++) {
         if (odwiedzone[i] == false) {
@@ -280,3 +362,30 @@ int AlgorytmyZad3::getLowestCost() {
     return lowestCost;
 }
 
+int AlgorytmyZad3::swapMethod(std::vector<std::vector<int>> &graph, int V, std::vector<int> &temp, int i, int j) {
+    if(i == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
+        temp[temp.size() - 1] = temp[j];
+    }
+    std::swap(temp[i], temp[j]);
+
+    int cost = 0;
+    for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
+        cost += graph[temp[k]][temp[k+1]];
+    }
+    cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
+    return cost;
+}
+
+int AlgorytmyZad3::twoOpt(std::vector<std::vector<int>> &graph, int V, std::vector<int> &temp, int i, int j) {
+    if(i == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
+        temp[temp.size() - 1] = temp[j];
+    }
+    std::reverse(temp.begin() + i, temp.begin() + j + 1);//zamienia kolejnosc [od;do)
+
+    int cost = 0;
+    for(int k = 0 ; k < V - 1 ; k++) {//zliczanie dlugosci nowej sciezki
+        cost += graph[temp[k]][temp[k+1]];
+    }
+    cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
+    return cost;
+}

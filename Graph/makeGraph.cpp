@@ -85,12 +85,12 @@ void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density,
         }
     }
 
-    // std::cout << "Generated graph (adjacency matrix):\n";
-    // for (const auto& row : graph) {
-    //     for (int val : row) {
-    //         std::cout<<val << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
+//     std::cout << "Generated graph (adjacency matrix):\n";
+//     for (const auto& row : graph) {
+//         for (int val : row) {
+//             std::cout<<val << " ";
+//         }
+//         std::cout << "\n";
+//     }
 }
 

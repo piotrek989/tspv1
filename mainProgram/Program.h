@@ -17,6 +17,8 @@ class Program {
     int iteracjeAlgorytmow;
     int maxCzasAlgorytmow;
     int solutionFromFile;
+    bool ifGenerateInitSolutionWithNn;
+    bool ifGenerateNeighbourhoodWithSwap;
     float T_min;
     float T_max;
     float alfa;
