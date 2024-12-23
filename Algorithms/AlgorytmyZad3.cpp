@@ -7,7 +7,13 @@
 #include <climits>
 
 //uwaga dla grafu nieskierowanego alg dziala dobrze bo swapow jest n*(n-1)/2 ale w nieskierowanyn bedzie n*(n-1) ---> do uwaględnienia
-AlgorytmyZad3::AlgorytmyZad3(bool ifStartWithNN, bool ifGenerateWithSwap) : generateInitSolutionWithNn(ifStartWithNN), ifGenerateNeighbourhoodWithSwap(ifGenerateWithSwap){}
+AlgorytmyZad3::AlgorytmyZad3(bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int iterationswithoutimprove, int solFromFile)
+    :generateInitSolutionWithNn(ifStartWithNN),
+    ifGenerateNeighbourhoodWithSwap(ifGenerateWithSwap),
+    ifGeometricCooling(ifgeometriColling),
+    iterationsWithoutImprove(iterationswithoutimprove),
+    solutionFromFile(solFromFile)
+    {}
 
 
 void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float alfa) {
@@ -17,16 +23,25 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
         randomMethod(graph, V);
     }
 
-    float T = T_max;//inicjacja poczatkowej temperatury
+    float T;
+    int k = 1;
+    if(ifGeometricCooling) {
+        T = T_max;//inicjacja poczatkowej temperatury
+    }else{
+        T = T_max/log(1.0 + static_cast<double>(k));
+    }
 
-    //printCostnPath();
+//    printCostnPath();
 
-    std::vector<int> initalPath = bestPath;
+    std::vector<int> initalPath;
 
-    std::vector<int> bestCosts;
-    std::vector<std::vector<int>> bestPaths;
+    int bestCost = lowestCost;
+    std::vector<int> path = bestPath;
 
     while (T > T_min) {
+        if (!ifGeometricCooling)//tylko jesli chlodzenie logarytmiczne
+            T = T_max/log(1.0 + static_cast<double>(k));
+
         initalPath = bestPath;//przypisanie przed kolejnymi epokami
         for(int i = 0 ; i < V - 1; i++) {//odpowiada za generowanie wszystkich kombinacji
             for(int j = i + 1; j < V ; j++) {
@@ -48,8 +63,10 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
                     std::srand(static_cast<unsigned>(time(0))); // Seed dla generatora liczb pseudolosowych
                     float r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
                         if(r < p) {
-                            bestCosts.push_back(lowestCost);
-                            bestPaths.push_back(bestPath);
+                            if(lowestCost < bestCost) {
+                                bestCost = lowestCost;//te dwie zmienne przechowuja najlepsze z najlepszych koszty
+                                path = bestPath;
+                            }
 
                             lowestCost = cost;
                             bestPath = temp;//zmiana dotychczasowego naj rozwiazania
@@ -58,14 +75,15 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
             }
         }
 
-        T *= alfa;
+        if (ifGeometricCooling)//tylko jesli chlodzenie geo
+            T *= alfa;
+        else
+            k++;
     }
-    for(int i = 0 ; i < bestCosts.size() ; i++) {
-        //std::cout<<i<<std::endl;
-        if(bestCosts[i] < lowestCost) {
-            lowestCost = bestCosts[i];
-            bestPath = bestPaths[i];
-        }
+
+    if(bestCost < lowestCost) {
+        lowestCost = bestCost;
+        bestPath = path;
     }
 
     //printCostnPath();
@@ -79,12 +97,13 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
         randomMethod(graph, V);
     }
 
-    std::vector<int> bestCosts;
-    std::vector<std::vector<int>> bestPaths;
 
-    printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
+//    printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
 
     std::vector<std::pair<std::vector<int>, int>> listaTabu;
+
+    int bestCost = lowestCost;
+    std::vector<int> path = bestPath;
 
     std::vector<int> currentSolution;
 
@@ -115,8 +134,10 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
                 }else {
                     k++;//zmienna dla mnie jedynie do trzymania tego czy juz chcemy brac gorsze rozwiazania
                     if (!isOnTabooList && k == 5) {//gdy nie jest na liscie tabu
-                        bestCosts.push_back(lowestCost);
-                        bestPaths.push_back(bestPath);//dajemy aby na koniec i tak wybrac najlepszych z najlepszych
+                        if(lowestCost < bestCost) {
+                            bestCost = lowestCost;//te dwie zmienne przechowuja najlepsze z najlepszych koszty
+                            path = bestPath;
+                        }
                         lowestCost = cost;
                         bestPath = temp;//zmiana dotychczasowego naj rozwiazania
                         k = 0;//reset zmiennej k
@@ -132,14 +153,13 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
         k++;
         i++;
     }
-    for(int i = 0 ; i < bestCosts.size() ; i++) {
-        //std::cout<<i<<std::endl;
-        if(bestCosts[i] < lowestCost) {
-            lowestCost = bestCosts[i];
-            bestPath = bestPaths[i];
-        }
+
+    if(bestCost < lowestCost) {
+        lowestCost = bestCost;
+        bestPath = path;
     }
-//    printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie
+//    printCostnPath();
+
 }
 
 bool AlgorytmyZad3::ifInTabuList(std::vector<std::pair<std::vector<int>, int>> &tabuList, std::vector<int> rozwiazanie) {

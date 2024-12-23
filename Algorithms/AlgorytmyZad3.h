@@ -18,6 +18,9 @@ private:
     std::vector<int> bestPath;
     bool generateInitSolutionWithNn;
     bool ifGenerateNeighbourhoodWithSwap;
+    bool ifGeometricCooling;
+    int iterationsWithoutImprove;
+    int solutionFromFile;
     int repetetiveNearestNeighbour(std::vector<std::vector<int>>& graph, int V);
     int nearestNeighbour(std::vector<std::vector<int>>& graph, int V, int start, std::vector<bool>& odwiedzone,
                           int current_cost, std::vector<int>& current_path,
@@ -31,7 +34,7 @@ private:
     int twoOpt(std::vector<std::vector<int>>& graph, int V, std::vector<int>& temp, int i, int j);
 
 public:
-    AlgorytmyZad3(bool ifStartWithNN, bool ifGenerateWithSwap);
+    AlgorytmyZad3(bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int);
     void SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float alfa);
     void TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kadencja);
     int getLowestCost();

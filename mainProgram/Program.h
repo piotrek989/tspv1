@@ -19,6 +19,8 @@ class Program {
     int solutionFromFile;
     bool ifGenerateInitSolutionWithNn;
     bool ifGenerateNeighbourhoodWithSwap;
+    bool ifGeometricCooling;
+    int iterationsWithoutImprove;
     float T_min;
     float T_max;
     float alfa;

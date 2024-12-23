@@ -8,7 +8,7 @@
 #include "../Algorithms/AlgorytmyZad3.h"
 
 Program::Program() {
-
+    solutionFromFile = -1;
 }
 
 bool stringToBool(const std::string& str) {
@@ -62,11 +62,13 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
     ifFromFile = stringToBool(konfiguracja["test z pojedynczego pliku:"]);
     ifGenerateInitSolutionWithNn = stringToBool(konfiguracja["generowanie poczatkowego rozwiazania nn:"]);
     ifGenerateNeighbourhoodWithSwap = stringToBool(konfiguracja["generowanie sasiedztwa swapem:"]);
+    ifGeometricCooling = stringToBool(konfiguracja["chlodzenie geometryczne:"]);
     T_min = std::stof(konfiguracja["T_min:"]);
     T_max = std::stof(konfiguracja["T_max:"]);
     alfa = std::stof(konfiguracja["alfa:"]);
     kadencja = std::stoi(konfiguracja["kadencja:"]);
     wielkoscListyTabu = std::stoi(konfiguracja["dlugosc listy tabu:"]);
+    iterationsWithoutImprove = std::stoi(konfiguracja["ilosc iteracji bez poprawy:"]);
     plik.close();
 }
 
@@ -82,18 +84,20 @@ void Program::glownyProgram() {
     std::cout << "T_minimalna: " << T_min << std::endl;
     std::cout << "T_maksymalna: " << T_max << std::endl;
     std::cout << "Alfa: " << alfa << std::endl;
+    std::cout << "Czy chlodzenie geometryczne: " << ifGeometricCooling << std::endl;
     std::cout << "Kadencja: " << kadencja << std::endl;
     std::cout << "Wielkosc listy tabu: " << wielkoscListyTabu << std::endl;
+    std::cout << "Ilosc iteracji bez poprawy: " << iterationsWithoutImprove << std::endl;
 
 
     std::vector<std::vector<int>> graph;
-    int V = 10;
+    int V = 50;
 
     int i = 0;
     int korzyscSimANnealing = 0;
     int korzyscTaboo = 0;
     int takiesame = 0;
-    while(i < 50) {
+    while(i < 1) {
         makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
         if (ifFromFile) {
             make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
@@ -101,41 +105,44 @@ void Program::glownyProgram() {
             make_graph.generateGraph(graph, 100, false, V);
         }
 
+        std::cout<<"Rozwiazanie z pliku: "<<solutionFromFile << std::endl;
+
         //std::cout<<std::endl;
 
         Timer timer(maxCzasAlgorytmow);
-//        AlgorytmyZad3 simulated_annealing;
-//        timer.startCounter();
-//        simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
-//        double t1 = timer.getCounter();
-//        std::cout<<std::endl;
-//        std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
-//        for(int i = 0 ; i < simulated_annealing.getBestPath().size() ; i++) {
-//            std::cout<<simulated_annealing.getBestPath()[i]<<" ";
-//        }
-//        std::cout<<std::endl;
-
-        AlgorytmyZad3 tabuSearch(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap);
+        AlgorytmyZad3 simulated_annealing(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                          ifGeometricCooling, iterationsWithoutImprove, solutionFromFile);
+        timer.startCounter();
+        simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
+        double t1 = timer.getCounter();
+        std::cout<<std::endl;
+        std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
+        for(int i = 0 ; i < simulated_annealing.getBestPath().size() ; i++) {
+            std::cout<<simulated_annealing.getBestPath()[i]<<" ";
+        }
+        std::cout<<std::endl;
+        ////////////////////////////////////
+        AlgorytmyZad3 tabuSearch(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling, iterationsWithoutImprove, solutionFromFile);
         timer.startCounter();
         tabuSearch.TS(graph, V, 50, 50);
         double t2 = timer.getCounter();
 
         std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
-//        for(int i = 0 ; i < tabuSearch.getBestPath().size() ; i++) {
-//            std::cout<<tabuSearch.getBestPath()[i]<<" ";
-//        }
+        for(int i = 0 ; i < tabuSearch.getBestPath().size() ; i++) {
+            std::cout<<tabuSearch.getBestPath()[i]<<" ";
+        }
         std::cout<<std::endl;
-
-        AlgorytmyZad3 tabuSearch1(ifGenerateInitSolutionWithNn, !ifGenerateNeighbourhoodWithSwap);
-        timer.startCounter();
-        tabuSearch1.TS(graph, V, 50, 50);
-        double t3 = timer.getCounter();
-
-        std::cout<<"Taboo search1: "<<t3<<"ms, najnizszy koszt: "<<tabuSearch1.getLowestCost()<<std::endl;
-//        for(int i = 0 ; i < tabuSearch1.getBestPath().size() ; i++) {
-//            std::cout<<tabuSearch1.getBestPath()[i]<<" ";
-//        }
-        std::cout<<std::endl;
+//
+//        AlgorytmyZad3 tabuSearch1(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, !ifGeometricCooling, iterationsWithoutImprove, solutionFromFile);
+//        timer.startCounter();
+//        tabuSearch1.TS(graph, V, 50, 50);
+//        double t3 = timer.getCounter();
+//
+//        std::cout<<"Taboo search1: "<<t3<<"ms, najnizszy koszt: "<<tabuSearch1.getLowestCost()<<std::endl;
+////        for(int i = 0 ; i < tabuSearch1.getBestPath().size() ; i++) {
+////            std::cout<<tabuSearch1.getBestPath()[i]<<" ";
+////        }
+//        std::cout<<std::endl;
 //
 //        if(simulated_annealing.getLowestCost() > tabuSearch.getLowestCost())
 //            korzyscTaboo++;
