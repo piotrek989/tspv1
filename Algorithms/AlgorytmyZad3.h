@@ -10,15 +10,18 @@
 #include <list>
 #include <random>
 #include <algorithm>
+#include "../mainProgram/Timer.h"
 
 class AlgorytmyZad3 {
 
 private:
+    Timer& timer_;
     int lowestCost;
     std::vector<int> bestPath;
     bool generateInitSolutionWithNn;
     bool ifGenerateNeighbourhoodWithSwap;
     bool ifGeometricCooling;
+    int iterationsToTakeWorse;
     int iterationsWithoutImprove;
     int solutionFromFile;
     int repetetiveNearestNeighbour(std::vector<std::vector<int>>& graph, int V);
@@ -32,9 +35,9 @@ private:
     void decrementCadency(std::vector<std::pair<std::vector<int>, int>>&tabuList);
     int swapMethod(std::vector<std::vector<int>>& graph, int V, std::vector<int>& temp, int i, int j);
     int twoOpt(std::vector<std::vector<int>>& graph, int V, std::vector<int>& temp, int i, int j);
-
+    bool ifOptimumFound();
 public:
-    AlgorytmyZad3(bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int);
+    AlgorytmyZad3(Timer&, bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int, int);
     void SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float alfa);
     void TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kadencja);
     int getLowestCost();

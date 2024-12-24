@@ -21,6 +21,7 @@ class Program {
     bool ifGenerateNeighbourhoodWithSwap;
     bool ifGeometricCooling;
     int iterationsWithoutImprove;
+    int iterationsToTakeWorse;
     float T_min;
     float T_max;
     float alfa;

@@ -69,6 +69,7 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
     kadencja = std::stoi(konfiguracja["kadencja:"]);
     wielkoscListyTabu = std::stoi(konfiguracja["dlugosc listy tabu:"]);
     iterationsWithoutImprove = std::stoi(konfiguracja["ilosc iteracji bez poprawy:"]);
+    iterationsToTakeWorse = std::stoi(konfiguracja["ilosc iteracji by wziac gorsze rozw:"]);
     plik.close();
 }
 
@@ -88,6 +89,7 @@ void Program::glownyProgram() {
     std::cout << "Kadencja: " << kadencja << std::endl;
     std::cout << "Wielkosc listy tabu: " << wielkoscListyTabu << std::endl;
     std::cout << "Ilosc iteracji bez poprawy: " << iterationsWithoutImprove << std::endl;
+    std::cout << "Ilosc iteracji by wziac gorsze roz: " << iterationsToTakeWorse << std::endl;
 
 
     std::vector<std::vector<int>> graph;
@@ -97,7 +99,7 @@ void Program::glownyProgram() {
     int korzyscSimANnealing = 0;
     int korzyscTaboo = 0;
     int takiesame = 0;
-    while(i < 1) {
+    while(i < 20) {
         makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
         if (ifFromFile) {
             make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
@@ -110,11 +112,11 @@ void Program::glownyProgram() {
         //std::cout<<std::endl;
 
         Timer timer(maxCzasAlgorytmow);
-        AlgorytmyZad3 simulated_annealing(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                          ifGeometricCooling, iterationsWithoutImprove, solutionFromFile);
+        AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                          ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove);
         timer.startCounter();
         simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
-        double t1 = timer.getCounter();
+        double t1 = timer.elapsed_time;
         std::cout<<std::endl;
         std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
         for(int i = 0 ; i < simulated_annealing.getBestPath().size() ; i++) {
@@ -122,7 +124,9 @@ void Program::glownyProgram() {
         }
         std::cout<<std::endl;
         ////////////////////////////////////
-        AlgorytmyZad3 tabuSearch(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling, iterationsWithoutImprove, solutionFromFile);
+        AlgorytmyZad3 tabuSearch(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling,
+                                 iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove);
+
         timer.startCounter();
         tabuSearch.TS(graph, V, 50, 50);
         double t2 = timer.getCounter();
@@ -131,26 +135,16 @@ void Program::glownyProgram() {
         for(int i = 0 ; i < tabuSearch.getBestPath().size() ; i++) {
             std::cout<<tabuSearch.getBestPath()[i]<<" ";
         }
+
         std::cout<<std::endl;
-//
-//        AlgorytmyZad3 tabuSearch1(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, !ifGeometricCooling, iterationsWithoutImprove, solutionFromFile);
-//        timer.startCounter();
-//        tabuSearch1.TS(graph, V, 50, 50);
-//        double t3 = timer.getCounter();
-//
-//        std::cout<<"Taboo search1: "<<t3<<"ms, najnizszy koszt: "<<tabuSearch1.getLowestCost()<<std::endl;
-////        for(int i = 0 ; i < tabuSearch1.getBestPath().size() ; i++) {
-////            std::cout<<tabuSearch1.getBestPath()[i]<<" ";
-////        }
-//        std::cout<<std::endl;
-//
-//        if(simulated_annealing.getLowestCost() > tabuSearch.getLowestCost())
-//            korzyscTaboo++;
-//        else if (simulated_annealing.getLowestCost() < tabuSearch.getLowestCost())
-//            korzyscSimANnealing++;
-//        else if (simulated_annealing.getLowestCost() == tabuSearch.getLowestCost()) {
-//            takiesame++;
-//        }
+
+        if(simulated_annealing.getLowestCost() > tabuSearch.getLowestCost())
+            korzyscTaboo++;
+        else if (simulated_annealing.getLowestCost() < tabuSearch.getLowestCost())
+            korzyscSimANnealing++;
+        else if (simulated_annealing.getLowestCost() == tabuSearch.getLowestCost()) {
+            takiesame++;
+        }
 
         i++;
     }

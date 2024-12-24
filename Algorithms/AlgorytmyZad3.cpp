@@ -7,12 +7,14 @@
 #include <climits>
 
 //uwaga dla grafu nieskierowanego alg dziala dobrze bo swapow jest n*(n-1)/2 ale w nieskierowanyn bedzie n*(n-1) ---> do uwaględnienia
-AlgorytmyZad3::AlgorytmyZad3(bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int iterationswithoutimprove, int solFromFile)
-    :generateInitSolutionWithNn(ifStartWithNN),
+AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int iterationstotakewrse, int solFromFile, int iterwithoutimprove)
+    :timer_(timer),
+    generateInitSolutionWithNn(ifStartWithNN),
     ifGenerateNeighbourhoodWithSwap(ifGenerateWithSwap),
     ifGeometricCooling(ifgeometriColling),
-    iterationsWithoutImprove(iterationswithoutimprove),
-    solutionFromFile(solFromFile)
+    iterationsToTakeWorse(iterationstotakewrse),
+    solutionFromFile(solFromFile),
+    iterationsWithoutImprove(iterwithoutimprove)
     {}
 
 
@@ -33,43 +35,52 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
 
 //    printCostnPath();
 
-    std::vector<int> initalPath;
+    std::vector<int> pom;//potrzebne do kolejnych generowan nowych sasiadow
 
-    int bestCost = lowestCost;
-    std::vector<int> path = bestPath;
+    int x_a = lowestCost;
+    std::vector<int> path_a = bestPath;
 
-    while (T > T_min) {
+    while (T > T_min && !ifOptimumFound()) {
+
+        double elapsed_time = timer_.getCounter();
+        if (elapsed_time > timer_.time_limit) {
+            timer_.elapsed_time = elapsed_time;
+            // Przekroczono dopuszczalny czas
+            return;
+        }
+        if (k >= iterationsWithoutImprove)
+            return;
+
         if (!ifGeometricCooling)//tylko jesli chlodzenie logarytmiczne
             T = T_max/log(1.0 + static_cast<double>(k));
 
-        initalPath = bestPath;//przypisanie przed kolejnymi epokami
+        pom = path_a;
         for(int i = 0 ; i < V - 1; i++) {//odpowiada za generowanie wszystkich kombinacji
             for(int j = i + 1; j < V ; j++) {
-                std::vector<int> temp = initalPath;
-                int cost;
+                std::vector<int> tmp_path = pom;
+                int tmp_cost;
                 if(ifGenerateNeighbourhoodWithSwap) {//w zaleznosci od tej zmiennej generujemy sasiedztwo
-                    cost = swapMethod(graph, V, temp, i, j);//metoda swapujaca -- metoda jest tylko dobrze dzialajaca dla grafu pełnego
+                    tmp_cost = swapMethod(graph, V, tmp_path, i, j);//metoda swapujaca -- metoda jest tylko dobrze dzialajaca dla grafu pełnego
                 }else{
-                    cost = twoOpt(graph, V, temp, i , j);
+                    tmp_cost = twoOpt(graph, V, tmp_path, i , j);
                 }
 
-                if (cost < lowestCost) {
-                    lowestCost = cost;
-                    bestPath = temp;//zmiana dotychczasowego naj rozwiazania
+                if(tmp_cost < lowestCost){
+                    lowestCost = tmp_cost;
+                    bestPath = tmp_path;
+                }
+                if (tmp_cost < x_a) {
+                    x_a = tmp_cost;
+                    path_a = tmp_path;
                 } else {
-                    float cost_new = static_cast<float>(cost);
+                    float cost_new = static_cast<float>(tmp_cost);
                     float cost_old = static_cast<float>(lowestCost);
                     float p = 1/(1 + std::exp((cost_old - cost_new)/T));
                     std::srand(static_cast<unsigned>(time(0))); // Seed dla generatora liczb pseudolosowych
                     float r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
                         if(r < p) {
-                            if(lowestCost < bestCost) {
-                                bestCost = lowestCost;//te dwie zmienne przechowuja najlepsze z najlepszych koszty
-                                path = bestPath;
-                            }
-
-                            lowestCost = cost;
-                            bestPath = temp;//zmiana dotychczasowego naj rozwiazania
+                            x_a = tmp_cost;
+                            path_a = tmp_path;
                         }
                 }
             }
@@ -77,17 +88,16 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
 
         if (ifGeometricCooling)//tylko jesli chlodzenie geo
             T *= alfa;
-        else
-            k++;
-    }
-
-    if(bestCost < lowestCost) {
-        lowestCost = bestCost;
-        bestPath = path;
+        k++;
     }
 
     //printCostnPath();
-
+}
+bool AlgorytmyZad3::ifOptimumFound() {
+    if(solutionFromFile == -1)
+        return false;
+    if (solutionFromFile == lowestCost)
+        return true;
 }
 
 void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kandencja) {
@@ -102,44 +112,44 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
 
     std::vector<std::pair<std::vector<int>, int>> listaTabu;
 
-    int bestCost = lowestCost;
-    std::vector<int> path = bestPath;
+    int x_a = lowestCost;
+    std::vector<int> path_a = bestPath;
 
-    std::vector<int> currentSolution;
+    std::vector<int> pom;
 
     int i = 0;
-    int k = 0;
+    int k = 1;
     while (i < 750) {
-        currentSolution = bestPath;//przypisanie przed kolejnymi epokami
         std::pair<std::vector<int>, int> x;
-        x.first = currentSolution;
+        x.first = path_a;
         x.second = kandencja;
         listaTabu.push_back(x);//dodanie do listy tabu nowego rozwiazania
+        pom = path_a;
         for(int i = 0 ; i < V - 1 ; i++) {//odpowiada za generowanie wszystkich kombinacji
             for(int j = i + 1; j < V ; j++) {
-                std::vector<int> temp = currentSolution;
-
-                int cost;
+                std::vector<int> tmp_path = pom;
+                int tmp_cost;
                 if(ifGenerateNeighbourhoodWithSwap) {//w zaleznosci od tej zmiennej generujemy sasiedztwo
-                    cost = swapMethod(graph, V, temp, i, j);//metoda swapujaca -- metoda jest tylko dobrze dzialajaca dla grafu pełnego
+                    tmp_cost = swapMethod(graph, V, tmp_path, i, j);//metoda swapujaca -- metoda jest tylko dobrze dzialajaca dla grafu pełnego
                 }else{
-                    cost = twoOpt(graph, V, temp, i , j);
+                    tmp_cost = twoOpt(graph, V, tmp_path, i , j);
                 }
 
+                bool isOnTabooList = ifInTabuList(listaTabu, tmp_path);//zmienna przechowuje mi czy dane rozw jest na taboo liscie
 
-                bool isOnTabooList = ifInTabuList(listaTabu, temp);//zmienna przechowuje mi czy dane rozw jest na taboo liscie
-                if (cost < lowestCost) {//jesli nowe roz lepsze i nie na tabooList
-                    lowestCost = cost;
-                    bestPath = temp;//zmiana dotychczasowego naj rozwiazania
-                }else {
-                    k++;//zmienna dla mnie jedynie do trzymania tego czy juz chcemy brac gorsze rozwiazania
-                    if (!isOnTabooList && k == 5) {//gdy nie jest na liscie tabu
-                        if(lowestCost < bestCost) {
-                            bestCost = lowestCost;//te dwie zmienne przechowuja najlepsze z najlepszych koszty
-                            path = bestPath;
-                        }
-                        lowestCost = cost;
-                        bestPath = temp;//zmiana dotychczasowego naj rozwiazania
+                if ((tmp_cost < x_a && !isOnTabooList) || (isOnTabooList && tmp_cost < lowestCost)) {//tmp_cost to kandydat na x_a, x_a to aktualne rozpatrywane
+                    if(tmp_cost < lowestCost) {
+                        lowestCost = tmp_cost;
+                        bestPath = tmp_path;//zmiana dotychczasowego naj rozwiazania
+                        k = 0;//jesli poprawiono dotychczasowe naj rozwiazanie to licznik bez poprawy zerujemy
+                    }
+                    x_a = tmp_cost;
+                    path_a = tmp_path;
+                }
+                else {
+                    if (!isOnTabooList && k == iterationsToTakeWorse) {//gdy nie jest na liscie tabu
+                        x_a = tmp_cost;//te dwie zmienne przechowuja najlepsze z najlepszych koszty
+                        path_a = tmp_path;
                         k = 0;//reset zmiennej k
                     }
                 }
@@ -150,14 +160,10 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
         if (listaTabu.size() > sizeOfTabuList) listaTabu.erase(listaTabu.begin());
 
         decrementCadency(listaTabu);
-        k++;
+        k++;//tutaj zwiekszamy gdy nie ma poprawy
         i++;
     }
 
-    if(bestCost < lowestCost) {
-        lowestCost = bestCost;
-        bestPath = path;
-    }
 //    printCostnPath();
 
 }

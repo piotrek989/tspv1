@@ -10,6 +10,8 @@
 class Timer {
 public:
     double time_limit;  // Limit czasu
+    double elapsed_time;
+
     // Konstruktor, który ustawia limit czasu
     explicit Timer(double limit);
 
