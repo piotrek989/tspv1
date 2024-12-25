@@ -1,4 +1,4 @@
-nazwa pliku wejsciowego:../Files/file_71aTsplib.txt
+nazwa pliku wejsciowego:../Files/file_34a.txt
 nazwa pliku wyjsciowego:..Files/output.txt
 test z pojedynczego pliku:true
 liczba powtorzen algorytmow:1
@@ -12,5 +12,5 @@ chlodzenie geometryczne:true
 T_min:0.00001
 T_max:100000
 alfa:0.995
-dlugosc listy tabu:500
-kadencja:150
+dlugosc listy tabu:2000
+kadencja:2000

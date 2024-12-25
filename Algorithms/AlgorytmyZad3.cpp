@@ -156,7 +156,7 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
 
         }
         if (listaTabu.size() > sizeOfTabuList) listaTabu.erase(listaTabu.begin());
-
+//        std::cout<< listaTabu.size()<<std::endl;
         decrementCadency(listaTabu);
         k++;//tutaj zwiekszamy gdy nie ma poprawy
         i++;

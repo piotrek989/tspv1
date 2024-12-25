@@ -130,7 +130,7 @@ void Program::glownyProgram() {
                                  iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove,procentageOfLowerBound);
 
         timer.startCounter();
-        tabuSearch.TS(graph, V, 50, 50);
+        tabuSearch.TS(graph, V, wielkoscListyTabu, kadencja);
         double t2 = timer.getCounter();
 
         std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
