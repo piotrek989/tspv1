@@ -70,6 +70,7 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
     wielkoscListyTabu = std::stoi(konfiguracja["dlugosc listy tabu:"]);
     iterationsWithoutImprove = std::stoi(konfiguracja["ilosc iteracji bez poprawy:"]);
     iterationsToTakeWorse = std::stoi(konfiguracja["ilosc iteracji by wziac gorsze rozw:"]);
+    procentageOfLowerBound = std::stof(konfiguracja["procent dolnego ograniczenia:"]);
     plik.close();
 }
 
@@ -84,6 +85,7 @@ void Program::glownyProgram() {
     std::cout << "Generowac sasiedztwo swapem?: "<<ifGenerateNeighbourhoodWithSwap<<std::endl;
     std::cout << "T_minimalna: " << T_min << std::endl;
     std::cout << "T_maksymalna: " << T_max << std::endl;
+    std::cout << "Procent dolnego ograniczenia: " << procentageOfLowerBound << std::endl;
     std::cout << "Alfa: " << alfa << std::endl;
     std::cout << "Czy chlodzenie geometryczne: " << ifGeometricCooling << std::endl;
     std::cout << "Kadencja: " << kadencja << std::endl;
@@ -99,7 +101,7 @@ void Program::glownyProgram() {
     int korzyscSimANnealing = 0;
     int korzyscTaboo = 0;
     int takiesame = 0;
-    while(i < 20) {
+    while(i < 1) {
         makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
         if (ifFromFile) {
             make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
@@ -113,10 +115,10 @@ void Program::glownyProgram() {
 
         Timer timer(maxCzasAlgorytmow);
         AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                          ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove);
+                                          ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
         timer.startCounter();
         simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
-        double t1 = timer.elapsed_time;
+        double t1 = timer.getCounter();
         std::cout<<std::endl;
         std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
         for(int i = 0 ; i < simulated_annealing.getBestPath().size() ; i++) {
@@ -125,7 +127,7 @@ void Program::glownyProgram() {
         std::cout<<std::endl;
         ////////////////////////////////////
         AlgorytmyZad3 tabuSearch(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling,
-                                 iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove);
+                                 iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove,procentageOfLowerBound);
 
         timer.startCounter();
         tabuSearch.TS(graph, V, 50, 50);

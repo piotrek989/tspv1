@@ -21,6 +21,7 @@ private:
     bool generateInitSolutionWithNn;
     bool ifGenerateNeighbourhoodWithSwap;
     bool ifGeometricCooling;
+    float procentageOfLowerBound;
     int iterationsToTakeWorse;
     int iterationsWithoutImprove;
     int solutionFromFile;
@@ -36,8 +37,9 @@ private:
     int swapMethod(std::vector<std::vector<int>>& graph, int V, std::vector<int>& temp, int i, int j);
     int twoOpt(std::vector<std::vector<int>>& graph, int V, std::vector<int>& temp, int i, int j);
     bool ifOptimumFound();
+    bool ifInProcentageOfLowerBound();
 public:
-    AlgorytmyZad3(Timer&, bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int, int);
+    AlgorytmyZad3(Timer&, bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int, int, float);
     void SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float alfa);
     void TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kadencja);
     int getLowestCost();

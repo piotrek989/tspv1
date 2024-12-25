@@ -7,14 +7,15 @@
 #include <climits>
 
 //uwaga dla grafu nieskierowanego alg dziala dobrze bo swapow jest n*(n-1)/2 ale w nieskierowanyn bedzie n*(n-1) ---> do uwaględnienia
-AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int iterationstotakewrse, int solFromFile, int iterwithoutimprove)
+AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int iterationstotakewrse, int solFromFile, int iterwithoutimprove,float procOfLowerBoud)
     :timer_(timer),
     generateInitSolutionWithNn(ifStartWithNN),
     ifGenerateNeighbourhoodWithSwap(ifGenerateWithSwap),
     ifGeometricCooling(ifgeometriColling),
     iterationsToTakeWorse(iterationstotakewrse),
     solutionFromFile(solFromFile),
-    iterationsWithoutImprove(iterwithoutimprove)
+    iterationsWithoutImprove(iterwithoutimprove),
+    procentageOfLowerBound(procOfLowerBoud)
     {}
 
 
@@ -40,12 +41,10 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
     int x_a = lowestCost;
     std::vector<int> path_a = bestPath;
 
-    while (T > T_min && !ifOptimumFound()) {
+    while (T > T_min && !ifOptimumFound() && !ifInProcentageOfLowerBound()) {
 
         double elapsed_time = timer_.getCounter();
-        if (elapsed_time > timer_.time_limit) {
-            timer_.elapsed_time = elapsed_time;
-            // Przekroczono dopuszczalny czas
+        if (elapsed_time >= timer_.time_limit) {
             return;
         }
         if (k >= iterationsWithoutImprove)
@@ -79,7 +78,7 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
                     std::srand(static_cast<unsigned>(time(0))); // Seed dla generatora liczb pseudolosowych
                     float r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
                         if(r < p) {
-                            x_a = tmp_cost;
+                            //x_a = tmp_cost;
                             path_a = tmp_path;
                         }
                 }
@@ -92,12 +91,6 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
     }
 
     //printCostnPath();
-}
-bool AlgorytmyZad3::ifOptimumFound() {
-    if(solutionFromFile == -1)
-        return false;
-    if (solutionFromFile == lowestCost)
-        return true;
 }
 
 void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kandencja) {
@@ -119,7 +112,12 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
 
     int i = 0;
     int k = 1;
-    while (i < 750) {
+    while (i < iterationsWithoutImprove && !ifOptimumFound() && !ifInProcentageOfLowerBound()) {
+        double elapsed_time = timer_.getCounter();
+        if (elapsed_time >= timer_.time_limit) {
+            return;
+        }
+
         std::pair<std::vector<int>, int> x;
         x.first = path_a;
         x.second = kandencja;
@@ -414,4 +412,24 @@ int AlgorytmyZad3::twoOpt(std::vector<std::vector<int>> &graph, int V, std::vect
     }
     cost += graph[temp[V-1]][temp[0]];//koszt powrotu do wierz startowego
     return cost;
+}
+
+bool AlgorytmyZad3::ifOptimumFound() {
+    if(solutionFromFile == -1 || solutionFromFile != lowestCost)
+        return false;
+    else
+        return true;
+}
+
+bool AlgorytmyZad3::ifInProcentageOfLowerBound(){
+    if (solutionFromFile == -1)//nie przerywamy bo nie mamy nawet podstaw na to
+        return false;
+    else{
+        float LC = static_cast<float>(lowestCost);
+        float SFF = static_cast<float>(solutionFromFile);
+        if (100 * ((LC - SFF)/SFF)<= procentageOfLowerBound)
+            return true;
+        else
+            return false;
+    }
 }

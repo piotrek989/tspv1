@@ -22,6 +22,7 @@ class Program {
     bool ifGeometricCooling;
     int iterationsWithoutImprove;
     int iterationsToTakeWorse;
+    float procentageOfLowerBound;
     float T_min;
     float T_max;
     float alfa;
