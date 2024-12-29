@@ -17,6 +17,7 @@ public:
     makeGraph();
     void generateGraph(std::vector<std::vector<int>>& graph, int density, bool isDirected, int V);
     void getFromFile(std::string nazwaPlikuWe, std::vector<std::vector<int>>&, int&, int&);
+    bool isSymetric(std::vector<std::vector<int>>& graph, int V);
 
 };
 

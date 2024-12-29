@@ -22,12 +22,13 @@ class Program {
     bool ifGeometricCooling;
     int iterationsWithoutImprove;
     int iterationsToTakeWorse;
-    float procentageOfLowerBound;
-    float T_min;
-    float T_max;
-    float alfa;
+    double procentageOfLowerBound;
+    double T_min;
+    double T_max;
+    double alfa;
     int kadencja;
     int wielkoscListyTabu;
+    bool isUnDirected;
 
     std::string nazwaPlikuWejsciowego;
     std::string nazwaPlikuWyjsciowego;

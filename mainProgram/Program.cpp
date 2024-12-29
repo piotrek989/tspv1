@@ -63,14 +63,14 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
     ifGenerateInitSolutionWithNn = stringToBool(konfiguracja["generowanie poczatkowego rozwiazania nn:"]);
     ifGenerateNeighbourhoodWithSwap = stringToBool(konfiguracja["generowanie sasiedztwa swapem:"]);
     ifGeometricCooling = stringToBool(konfiguracja["chlodzenie geometryczne:"]);
-    T_min = std::stof(konfiguracja["T_min:"]);
-    T_max = std::stof(konfiguracja["T_max:"]);
-    alfa = std::stof(konfiguracja["alfa:"]);
+    T_min = std::stod(konfiguracja["T_min:"]);
+    T_max = std::stod(konfiguracja["T_max:"]);
+    alfa = std::stod(konfiguracja["alfa:"]);
     kadencja = std::stoi(konfiguracja["kadencja:"]);
     wielkoscListyTabu = std::stoi(konfiguracja["dlugosc listy tabu:"]);
     iterationsWithoutImprove = std::stoi(konfiguracja["ilosc iteracji bez poprawy:"]);
     iterationsToTakeWorse = std::stoi(konfiguracja["ilosc iteracji by wziac gorsze rozw:"]);
-    procentageOfLowerBound = std::stof(konfiguracja["procent dolnego ograniczenia:"]);
+    procentageOfLowerBound = std::stod(konfiguracja["procent dolnego ograniczenia:"]);
     plik.close();
 }
 
@@ -95,7 +95,7 @@ void Program::glownyProgram() {
 
 
     std::vector<std::vector<int>> graph;
-    int V = 50;
+    int V = 5;
 
     int i = 0;
     int korzyscSimANnealing = 0;
@@ -103,10 +103,14 @@ void Program::glownyProgram() {
     int takiesame = 0;
     while(i < 1) {
         makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
+        isUnDirected = false;//domyślnie ustawiamy ze graf nie jest skierowany (tzn ze jest sym)
         if (ifFromFile) {
             make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
+            isUnDirected = make_graph.isSymetric(graph, V);//sprawdzamy czy graf symetryczny
+            std::cout<<"Czy graf symetryczny: "<< isUnDirected << std::endl;
         }else {
-            make_graph.generateGraph(graph, 100, false, V);
+            make_graph.generateGraph(graph, 100, isUnDirected, V);//tutaj podajemy czy skierowany czy nie
+
         }
 
         std::cout<<"Rozwiazanie z pliku: "<<solutionFromFile << std::endl;
@@ -121,8 +125,8 @@ void Program::glownyProgram() {
         double t1 = timer.getCounter();
         std::cout<<std::endl;
         std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
-        for(int i = 0 ; i < simulated_annealing.getBestPath().size() ; i++) {
-            std::cout<<simulated_annealing.getBestPath()[i]<<" ";
+        for(int j = 0 ; j < simulated_annealing.getBestPath().size() ; j++) {
+            std::cout<<simulated_annealing.getBestPath()[j]<<" ";
         }
         std::cout<<std::endl;
         ////////////////////////////////////
@@ -134,8 +138,8 @@ void Program::glownyProgram() {
         double t2 = timer.getCounter();
 
         std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
-        for(int i = 0 ; i < tabuSearch.getBestPath().size() ; i++) {
-            std::cout<<tabuSearch.getBestPath()[i]<<" ";
+        for(int j = 0 ; j < tabuSearch.getBestPath().size() ; j++) {
+            std::cout<<tabuSearch.getBestPath()[j]<<" ";
         }
 
         std::cout<<std::endl;

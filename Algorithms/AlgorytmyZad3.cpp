@@ -7,7 +7,7 @@
 #include <climits>
 
 //uwaga dla grafu nieskierowanego alg dziala dobrze bo swapow jest n*(n-1)/2 ale w nieskierowanyn bedzie n*(n-1) ---> do uwaględnienia
-AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int iterationstotakewrse, int solFromFile, int iterwithoutimprove,float procOfLowerBoud)
+AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int iterationstotakewrse, int solFromFile, int iterwithoutimprove,double procOfLowerBoud)
     :timer_(timer),
     generateInitSolutionWithNn(ifStartWithNN),
     ifGenerateNeighbourhoodWithSwap(ifGenerateWithSwap),
@@ -19,14 +19,14 @@ AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWi
     {}
 
 
-void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float alfa) {
+void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, double T_max, double T_min, double alfa) {
     if(generateInitSolutionWithNn) {
         repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
     }else{
         randomMethod(graph, V);
     }
 
-    float T;
+    double T;
     int k = 1;
     if(ifGeometricCooling) {
         T = T_max;//inicjacja poczatkowej temperatury
@@ -34,7 +34,7 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
         T = T_max/log(1.0 + static_cast<double>(k));
     }
 
-//    printCostnPath();
+    printCostnPath();
 
     std::vector<int> pom;//potrzebne do kolejnych generowan nowych sasiadow
 
@@ -72,11 +72,11 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, floa
                     x_a = tmp_cost;
                     path_a = tmp_path;
                 } else {
-                    float cost_new = static_cast<float>(tmp_cost);
-                    float cost_old = static_cast<float>(lowestCost);
-                    float p = 1/(1 + std::exp((cost_old - cost_new)/T));
+                    auto cost_new = static_cast<double>(tmp_cost);
+                    auto cost_old = static_cast<double>(lowestCost);
+                    double p = 1.0/(1.0 + std::exp((cost_old - cost_new)/T));
                     std::srand(static_cast<unsigned>(time(0))); // Seed dla generatora liczb pseudolosowych
-                    float r = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
+                    auto r = static_cast<double>(std::rand()) / static_cast<double>(RAND_MAX);
                         if(r < p) {
                             //x_a = tmp_cost;
                             path_a = tmp_path;
@@ -135,7 +135,7 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
 
                 bool isOnTabooList = ifInTabuList(listaTabu, tmp_path);//zmienna przechowuje mi czy dane rozw jest na taboo liscie
 
-                if ((tmp_cost < x_a && !isOnTabooList) || (isOnTabooList && tmp_cost < lowestCost)) {//tmp_cost to kandydat na x_a, x_a to aktualne rozpatrywane
+                if ((tmp_cost < x_a && !isOnTabooList) || (isOnTabooList && tmp_cost < lowestCost)) {//tmp_cost to kandydat na x_a, x_a to aktualne rozpatrywane\\\ten drugi warunek to kryt aspiracji
                     if(tmp_cost < lowestCost) {
                         lowestCost = tmp_cost;
                         bestPath = tmp_path;//zmiana dotychczasowego naj rozwiazania
@@ -425,8 +425,8 @@ bool AlgorytmyZad3::ifInProcentageOfLowerBound(){
     if (solutionFromFile == -1)//nie przerywamy bo nie mamy nawet podstaw na to
         return false;
     else{
-        float LC = static_cast<float>(lowestCost);
-        float SFF = static_cast<float>(solutionFromFile);
+        auto LC = static_cast<double>(lowestCost);
+        auto SFF = static_cast<double>(solutionFromFile);
         if (100 * ((LC - SFF)/SFF)<= procentageOfLowerBound)
             return true;
         else

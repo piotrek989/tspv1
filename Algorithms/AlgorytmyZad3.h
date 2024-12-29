@@ -21,7 +21,7 @@ private:
     bool generateInitSolutionWithNn;
     bool ifGenerateNeighbourhoodWithSwap;
     bool ifGeometricCooling;
-    float procentageOfLowerBound;
+    double procentageOfLowerBound;
     int iterationsToTakeWorse;
     int iterationsWithoutImprove;
     int solutionFromFile;
@@ -39,8 +39,8 @@ private:
     bool ifOptimumFound();
     bool ifInProcentageOfLowerBound();
 public:
-    AlgorytmyZad3(Timer&, bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int, int, float);
-    void SAlgorithm(std::vector<std::vector<int>>& graph, int V, float T_max, float T_min, float alfa);
+    AlgorytmyZad3(Timer&, bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int, int, double);
+    void SAlgorithm(std::vector<std::vector<int>>& graph, int V, double T_max, double T_min, double alfa);
     void TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kadencja);
     int getLowestCost();
     std::vector<int> getBestPath();

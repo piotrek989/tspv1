@@ -85,12 +85,22 @@ void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density,
         }
     }
 
-//     std::cout << "Generated graph (adjacency matrix):\n";
-//     for (const auto& row : graph) {
-//         for (int val : row) {
-//             std::cout<<val << " ";
-//         }
-//         std::cout << "\n";
-//     }
+     std::cout << "Generated graph (adjacency matrix):\n";
+     for (const auto& row : graph) {
+         for (int val : row) {
+             std::cout<<val << " ";
+         }
+         std::cout << "\n";
+     }
+}
+
+bool makeGraph::isSymetric(std::vector<std::vector<int>>& graph, int V){
+    for(int i = 0 ; i < V ; i ++){
+        for (int j = 0 ; j < V ; j++){
+            if(graph[i][j] != graph[j][i])
+                return false;
+        }
+    }
+    return true;
 }
 
