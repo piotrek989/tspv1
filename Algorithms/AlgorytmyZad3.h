@@ -44,6 +44,8 @@ public:
     void TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTabuList, int kadencja);
     int getLowestCost();
     std::vector<int> getBestPath();
+    double countRelativeError();//blad względny
+    int countAbsoluteError();//blad bezwzgledny
 };
 
 

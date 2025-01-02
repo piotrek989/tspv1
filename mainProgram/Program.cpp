@@ -7,9 +7,11 @@
 #include "Timer.h"
 #include "../Algorithms/AlgorytmyZad3.h"
 
-Program::Program() {
-    solutionFromFile = -1;
-}
+Program::Program()//lista inicjalizacyjna
+    :solutionFromFile(-1),
+     ifTesting(true)//przed zajeciam to zmienic na false
+{}
+
 
 bool stringToBool(const std::string& str) {
     if (str == "true") {
@@ -19,6 +21,24 @@ bool stringToBool(const std::string& str) {
     }
     // Jeśli string nie jest ani "true" ani "false", możesz zwrócić domyślną wartość, np. false, albo rzucić wyjątek
     throw std::invalid_argument("Invalid input: not a valid boolean string.");
+}
+
+void Program::printConfigFile() {
+    std::cout << "max czas wykonywania algorytmu[ms]: " << maxCzasAlgorytmow << "\n";
+    std::cout << "liczba powtorzen algorytmow: " << potworzeniaAlgorytmow << "\n";
+    std::cout<<"Nazwa pliku we: "<<nazwaPlikuWejsciowego<<std::endl;
+    std::cout<<"Nazwa pliku wy: "<<nazwaPlikuWyjsciowego<<std::endl;
+    std::cout << "Generowac pocz rozw nn?: "<<ifGenerateInitSolutionWithNn<<std::endl;
+    std::cout << "Generowac sasiedztwo swapem?: "<<ifGenerateNeighbourhoodWithSwap<<std::endl;
+    std::cout << "T_minimalna: " << T_min << std::endl;
+    std::cout << "T_maksymalna: " << T_max << std::endl;
+    std::cout << "Procent dolnego ograniczenia: " << procentageOfLowerBound << std::endl;
+    std::cout << "Alfa: " << alfa << std::endl;
+    std::cout << "Czy chlodzenie geometryczne: " << ifGeometricCooling << std::endl;
+    std::cout << "Kadencja: " << kadencja << std::endl;
+    std::cout << "Wielkosc listy tabu: " << wielkoscListyTabu << std::endl;
+    std::cout << "Ilosc iteracji bez poprawy: " << iterationsWithoutImprove << std::endl;
+    std::cout << "Ilosc iteracji by wziac gorsze roz: " << iterationsToTakeWorse << std::endl;
 }
 
 void Program::wczytanieZPlikuKonfiguracyjnego() {
@@ -56,7 +76,7 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
 
     //uwaga w kluczu podajemy z dwukropkiem
     maxCzasAlgorytmow = std::stoi(konfiguracja["max czas wykonywania algorytmu[ms]:"]);
-    iteracjeAlgorytmow = std::stoi(konfiguracja["liczba powtorzen algorytmow:"]);
+    potworzeniaAlgorytmow = std::stoi(konfiguracja["liczba powtorzen algorytmow:"]);
     nazwaPlikuWejsciowego = konfiguracja["nazwa pliku wejsciowego:"];
     nazwaPlikuWyjsciowego = konfiguracja["nazwa pliku wyjsciowego:"];
     ifFromFile = stringToBool(konfiguracja["test z pojedynczego pliku:"]);
@@ -77,87 +97,124 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
 
 void Program::glownyProgram() {
     wczytanieZPlikuKonfiguracyjnego();
-    std::cout << "max czas wykonywania algorytmu[ms]: " << maxCzasAlgorytmow << "\n";
-    std::cout << "liczba powtorzen algorytmow: " << iteracjeAlgorytmow << "\n";
-    std::cout<<"Nazwa pliku we: "<<nazwaPlikuWejsciowego<<std::endl;
-    std::cout<<"Nazwa pliku wy: "<<nazwaPlikuWyjsciowego<<std::endl;
-    std::cout << "Generowac pocz rozw nn?: "<<ifGenerateInitSolutionWithNn<<std::endl;
-    std::cout << "Generowac sasiedztwo swapem?: "<<ifGenerateNeighbourhoodWithSwap<<std::endl;
-    std::cout << "T_minimalna: " << T_min << std::endl;
-    std::cout << "T_maksymalna: " << T_max << std::endl;
-    std::cout << "Procent dolnego ograniczenia: " << procentageOfLowerBound << std::endl;
-    std::cout << "Alfa: " << alfa << std::endl;
-    std::cout << "Czy chlodzenie geometryczne: " << ifGeometricCooling << std::endl;
-    std::cout << "Kadencja: " << kadencja << std::endl;
-    std::cout << "Wielkosc listy tabu: " << wielkoscListyTabu << std::endl;
-    std::cout << "Ilosc iteracji bez poprawy: " << iterationsWithoutImprove << std::endl;
-    std::cout << "Ilosc iteracji by wziac gorsze roz: " << iterationsToTakeWorse << std::endl;
+    printConfigFile();
 
+    std::vector<std::vector<int>> graph;//nasze dwie glowne zmienne
+    int V;
 
-    std::vector<std::vector<int>> graph;
-    int V = 5;
+    if (ifTesting) {//jesli to sa testy
+        std::vector<double> times;
+        double avgTime;
+        double absErrorAvg;
+        double relativeErrorAvg;
+        std::vector<int> absoluteErrors;
+        std::vector<double> relativeErrors;
+        std::vector<int> solutions;
+        std::vector<std::string> listaInstancji = {"10s", "13s","34a", "65a"};
+        makeGraph makegraph;
+        Timer timer(maxCzasAlgorytmow);//moj obiekt zegara
+        Timer timer2(maxCzasAlgorytmow);
 
-    int i = 0;
-    int korzyscSimANnealing = 0;
-    int korzyscTaboo = 0;
-    int takiesame = 0;
-    while(i < 1) {
-        makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
-        isUnDirected = false;//domyślnie ustawiamy ze graf nie jest skierowany (tzn ze jest sym)
-        if (ifFromFile) {
-            make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
-            isUnDirected = make_graph.isSymetric(graph, V);//sprawdzamy czy graf symetryczny
-            std::cout<<"Czy graf symetryczny: "<< isUnDirected << std::endl;
-        }else {
-            make_graph.generateGraph(graph, 100, isUnDirected, V);//tutaj podajemy czy skierowany czy nie
+        for (int i = 0 ; i < listaInstancji.size(); i++) {
+            avgTime = 0.0;
+            absErrorAvg = 0.0;
+            relativeErrorAvg = 0.0;
 
+            std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";
+            std::cout<<"Wczytano plik o nazwie: "<<nazwaPojInstancji<<std::endl;
+            makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
+            makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
+            // makeGraph.printGraph(graph);
+            int j;
+            timer2.startCounter();
+            std::cout<<"Alg: SA"<<std::endl;
+            for(j = 0 ; j < potworzeniaAlgorytmow ; j++) {
+                if(timer2.getCounter() > maxCzasAlgorytmow)
+                    break;
+                AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                                  ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                timer.startCounter();
+                simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
+                double t1 = timer.getCounter();
+                times.push_back(t1);
+                avgTime += t1;
+                int lowestCost = simulated_annealing.getLowestCost();
+                solutions.push_back(lowestCost);
+                std::cout<<j + 1<<". "<<t1<<"ms, koszt: "<<lowestCost<<std::endl;
+
+                int absoluteError = simulated_annealing.countAbsoluteError();
+                double relError = simulated_annealing.countRelativeError();
+                absErrorAvg += absoluteError;
+                relativeErrorAvg += relError;
+                absoluteErrors.push_back(absoluteError);
+                relativeErrors.push_back(relError);
+            }
+            avgTime /= j;
+            relativeErrorAvg /= j;
+            absErrorAvg /= j;
+            makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);
+            //czyszczenie
+            times.clear();
+            absoluteErrors.clear();
+            relativeErrors.clear();
+            solutions.clear();
         }
 
-        std::cout<<"Rozwiazanie z pliku: "<<solutionFromFile << std::endl;
+    } else {//jesli to sa zajecia
+        int i = 0;
+        while(i < 1) {
+            makeGraph make_graph;//graph/getosc/czyskierowany(false --> inst. syme)/liczba wierzcholkow
+            isUnDirected = false;//domyślnie ustawiamy ze graf nie jest skierowany (tzn ze jest sym)
+            if (ifFromFile) {
+                make_graph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
+                isUnDirected = make_graph.isSymetric(graph, V);//sprawdzamy czy graf symetryczny
+                std::cout<<"Czy graf symetryczny: "<< isUnDirected << std::endl;
+            }else {
+                V = 10;
+                make_graph.generateGraph(graph, 100, isUnDirected, V);//tutaj podajemy czy skierowany czy nie
 
-        //std::cout<<std::endl;
+            }
 
-        Timer timer(maxCzasAlgorytmow);
-        AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                          ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
-        timer.startCounter();
-        simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
-        double t1 = timer.getCounter();
-        std::cout<<std::endl;
-        std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
-        for(int j = 0 ; j < simulated_annealing.getBestPath().size() ; j++) {
-            std::cout<<simulated_annealing.getBestPath()[j]<<" ";
+            std::cout<<"Rozwiazanie z pliku: "<<solutionFromFile << std::endl;
+
+
+            //std::cout<<std::endl;
+
+            Timer timer(maxCzasAlgorytmow);
+            AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                              ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+            timer.startCounter();
+            simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
+            double t1 = timer.getCounter();
+            std::cout<<std::endl;
+            std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
+            for(int j = 0 ; j < simulated_annealing.getBestPath().size() ; j++) {
+                std::cout<<simulated_annealing.getBestPath()[j]<<" ";
+            }
+            int absError = simulated_annealing.countAbsoluteError();
+            float relError = simulated_annealing.countRelativeError();
+            std::cout<<std::endl;
+            std::cout<<"Bezwzgledny blad: "<<absError<<std::endl;
+            std::cout<<"Wzgledny blad: "<<relError<<std::endl;
+            std::cout<<"Wzgledny w [%]: "<<relError * 100.0<<std::endl;
+            std::cout<<std::endl;
+            ////////////////////////////////////
+            AlgorytmyZad3 tabuSearch(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling,
+                                     iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove,procentageOfLowerBound);
+
+            timer.startCounter();
+            tabuSearch.TS(graph, V, wielkoscListyTabu, kadencja);
+            double t2 = timer.getCounter();
+
+            std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
+            for(int j = 0 ; j < tabuSearch.getBestPath().size() ; j++) {
+                std::cout<<tabuSearch.getBestPath()[j]<<" ";
+            }
+
+            std::cout<<std::endl;
+
+            i++;
         }
-        std::cout<<std::endl;
-        ////////////////////////////////////
-        AlgorytmyZad3 tabuSearch(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling,
-                                 iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove,procentageOfLowerBound);
-
-        timer.startCounter();
-        tabuSearch.TS(graph, V, wielkoscListyTabu, kadencja);
-        double t2 = timer.getCounter();
-
-        std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
-        for(int j = 0 ; j < tabuSearch.getBestPath().size() ; j++) {
-            std::cout<<tabuSearch.getBestPath()[j]<<" ";
-        }
-
-        std::cout<<std::endl;
-
-        if(simulated_annealing.getLowestCost() > tabuSearch.getLowestCost())
-            korzyscTaboo++;
-        else if (simulated_annealing.getLowestCost() < tabuSearch.getLowestCost())
-            korzyscSimANnealing++;
-        else if (simulated_annealing.getLowestCost() == tabuSearch.getLowestCost()) {
-            takiesame++;
-        }
-
-        i++;
     }
-    std::cout<<"Najmniejsze koszty ile razy:"<<std::endl;
-    std::cout<<"SA: "<<korzyscSimANnealing<<std::endl;
-    std::cout<<"TS: "<<korzyscTaboo<<std::endl;
-    std::cout<<"Ile razy takie same: "<<takiesame<<std::endl;
-
 }
 

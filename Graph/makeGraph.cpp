@@ -2,6 +2,7 @@
 // Created by Piotr on 10.12.2024.
 //
 
+
 #include "makeGraph.h"
 
 
@@ -23,6 +24,7 @@ void makeGraph::getFromFile(std::string nazwaPlikuWe, std::vector<std::vector<in
         throw std::runtime_error("Błąd podczas odczytu liczby wierzchołków z pliku.");
     }
 
+
     // Wczytanie najlepszego znalezionego wyniku
     inputFile >> solutionFromFile;
     if (inputFile.fail()) {
@@ -30,7 +32,10 @@ void makeGraph::getFromFile(std::string nazwaPlikuWe, std::vector<std::vector<in
     }
 
     // Wczytanie macierzy sąsiedztwa
+    graph.clear();
+    graph.shrink_to_fit();
     graph.resize(V, std::vector<int>(V));
+
     for (int i = 0; i < V; ++i) {
         for (int j = 0; j < V; ++j) {
             inputFile >> graph[i][j];
@@ -44,6 +49,51 @@ void makeGraph::getFromFile(std::string nazwaPlikuWe, std::vector<std::vector<in
 }
 
 
+void makeGraph::writeToFileTimesAndAvg(std::vector<double> times, std::vector<int> absoluteErrors,
+                                 std::vector<double> relativeErrors,
+                                 std::vector<int> solutions,
+                                 double avgTime, double absErrorAvg, double relativeErrorAvg) {
+    std::ofstream file("../Files/output.txt", std::ios::app); // otwieramy plik w trybie dopisywania
+
+    if (!file.is_open()) {
+        throw std::ios_base::failure("Nie udało się otworzyć pliku output.txt");
+    }
+
+    if (times.size() != absoluteErrors.size() || times.size() != relativeErrors.size()) {
+        throw std::invalid_argument("Rozmiary wektorów times, absoluteErrors i relativeErrors muszą być takie same.");
+    }
+
+    file << "czas[ms];droga;wzgledny;wzgledny[%];bezwzgledny" << std::endl;//3linia
+    for (size_t i = 0; i < times.size(); ++i) {
+        double relativeErrorPercent = relativeErrors[i] * 100.0;
+
+        file << std::fixed << std::setprecision(2)
+             << times[i] << ";" << solutions[i] << ";" << relativeErrors[i]
+             << ";" << relativeErrorPercent << ";" << absoluteErrors[i] << std::endl;
+    }
+
+    // Podsumowanie (ostatnia linia)
+    file << "sredniczas[ms];sredniwzgledny;sredniWzg[%];sredniBezWzg" << std::endl;
+    double avgRelativeErrorPercent = relativeErrorAvg * 100.0;
+    file << std::fixed << std::setprecision(2)
+         << avgTime << ";" << relativeErrorAvg << ";" << avgRelativeErrorPercent << ";"
+         << absErrorAvg << ";" << std::endl;
+
+    file.close();
+}
+
+void makeGraph::writeInitInfo(const std::string &nameInputFile, const std::string &typeOfMethod, int solutionFromFile) {
+    std::ofstream file("../Files/output.txt", std::ios::app); // otwieramy plik w trybie dopisywania
+
+    if (!file.is_open()) {
+        throw std::ios_base::failure("Nie udało się otworzyć pliku output.txt");
+    }
+
+    file << "metoda;nazwa pliku;OptSolution" << std::endl;//1linia
+    file << typeOfMethod << ";" <<nameInputFile << ";" << solutionFromFile << std::endl;//2 linia
+
+    file.close();
+}
 
 
 void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density, bool isDirected, int V) {
@@ -84,14 +134,6 @@ void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density,
             }
         }
     }
-
-     std::cout << "Generated graph (adjacency matrix):\n";
-     for (const auto& row : graph) {
-         for (int val : row) {
-             std::cout<<val << " ";
-         }
-         std::cout << "\n";
-     }
 }
 
 bool makeGraph::isSymetric(std::vector<std::vector<int>>& graph, int V){
@@ -104,3 +146,12 @@ bool makeGraph::isSymetric(std::vector<std::vector<int>>& graph, int V){
     return true;
 }
 
+void makeGraph::printGraph(std::vector<std::vector<int> > &graph) {
+    std::cout << "Generated graph (adjacency matrix):\n";
+    for (const auto& row : graph) {
+        for (int val : row) {
+            std::cout<<val << " ";
+        }
+        std::cout << "\n";
+    }
+}

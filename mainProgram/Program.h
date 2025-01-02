@@ -14,7 +14,7 @@
 #include "../Graph/makeGraph.h"
 
 class Program {
-    int iteracjeAlgorytmow;
+    int potworzeniaAlgorytmow;
     int maxCzasAlgorytmow;
     int solutionFromFile;
     bool ifGenerateInitSolutionWithNn;
@@ -29,6 +29,7 @@ class Program {
     int kadencja;
     int wielkoscListyTabu;
     bool isUnDirected;
+    bool ifTesting;
 
     std::string nazwaPlikuWejsciowego;
     std::string nazwaPlikuWyjsciowego;
@@ -36,6 +37,7 @@ class Program {
 
     std::unordered_map<std::string, std::string> konfiguracja;//wczytywanie z pliku konfiguracyjnego
 
+    void printConfigFile();
 public:
     Program();
     void wczytanieZPlikuKonfiguracyjnego();

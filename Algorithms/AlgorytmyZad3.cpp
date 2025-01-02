@@ -34,7 +34,7 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, doub
         T = T_max/log(1.0 + static_cast<double>(k));
     }
 
-    printCostnPath();
+    // printCostnPath();
 
     std::vector<int> pom;//potrzebne do kolejnych generowan nowych sasiadow
 
@@ -101,7 +101,7 @@ void AlgorytmyZad3::TS(std::vector<std::vector<int>>& graph, int V, int sizeOfTa
     }
 
 
-//    printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
+    // printCostnPath();//meotda dodatkowa printuje mi wyniki dla mnie;
 
     std::vector<std::pair<std::vector<int>, int>> listaTabu;
 
@@ -305,68 +305,57 @@ void AlgorytmyZad3::randomMethod(std::vector<std::vector<int>> &graph, int V) {
     for (int i = 0; i < V; i++) {  // indeksów tyle, ile wierzchołków
         tab_nieodwiedzonych[i] = i;
     }
-    int i = 0;
-    int iterations;
-    if(V > 0 && V <= 7)
-        iterations = 50;
-    else if (V >= 8 && V <= 13)
-        iterations = 200;
-    else
-        iterations = 500;
 
-    while (i < iterations) {
-        std::vector<int> currentPath;  // Ścieżka dla bieżącej iteracji
-        std::vector<int> temp_tab_nieodwiedzonych = tab_nieodwiedzonych;  // Tymczasowa lista wierzchołków do odwiedzenia
-        int score = 0;
+    std::vector<int> currentPath;  // Ścieżka dla bieżącej iteracji
+    std::vector<int> temp_tab_nieodwiedzonych = tab_nieodwiedzonych;  // Tymczasowa lista wierzchołków do odwiedzenia
+    int score = 0;
 
-        for (int j = 0; j < V; j++) {
-            std::uniform_int_distribution<> dist(0, temp_tab_nieodwiedzonych.size() - 1);  // losowanie indeksu
-            int randIndex = dist(g);  // generowanie liczby z distribution liczb z zadanego wyżej przedziału
+    for (int j = 0; j < V; j++) {
+        std::uniform_int_distribution<> dist(0, temp_tab_nieodwiedzonych.size() - 1);  // losowanie indeksu
+        int randIndex = dist(g);  // generowanie liczby z distribution liczb z zadanego wyżej przedziału
 
-            int currentNode = temp_tab_nieodwiedzonych[randIndex];
-            currentPath.push_back(currentNode);  // dodanie wierzchołka do ścieżki
+        int currentNode = temp_tab_nieodwiedzonych[randIndex];
+        currentPath.push_back(currentNode);  // dodanie wierzchołka do ścieżki
 
-            if (j > 0) {
-                // Obliczamy wagę krawędzi między bieżącym a poprzednim wierzchołkiem
-                int prevNode = currentPath[j - 1];
-                int weight = graph[prevNode][currentNode];
+        if (j > 0) {
+            // Obliczamy wagę krawędzi między bieżącym a poprzednim wierzchołkiem
+            int prevNode = currentPath[j - 1];
+            int weight = graph[prevNode][currentNode];
 
-                // Sprawdzamy, czy istnieje połączenie
-                if (weight == -1) {
-                    // Brak połączenia - przechodzimy do następnej iteracji
-                    score = INT_MAX;
-                    break;
-                }
-                score += weight;
+            // Sprawdzamy, czy istnieje połączenie
+            if (weight == -1) {
+                // Brak połączenia - przechodzimy do następnej iteracji
+                score = INT_MAX;
+                break;
             }
-
-            // Usuwamy odwiedzony wierzchołek z listy
-            temp_tab_nieodwiedzonych.erase(temp_tab_nieodwiedzonych.begin() + randIndex);
+            score += weight;
         }
 
-        if (score != INT_MAX) {
-            // Łączymy ostatni wierzchołek z pierwszym, aby zamknąć cykl
-            int lastNode = currentPath.back();
-            int firstNode = currentPath.front();
-            int lastEdgeWeight = graph[lastNode][firstNode];
+        // Usuwamy odwiedzony wierzchołek z listy
+        temp_tab_nieodwiedzonych.erase(temp_tab_nieodwiedzonych.begin() + randIndex);
+    }
 
-            if (lastEdgeWeight != -1) {  // Jeśli połączenie istnieje
-                score += lastEdgeWeight;
-                currentPath.push_back(firstNode);  // Zamyka cykl
+    if (score != INT_MAX) {
+        // Łączymy ostatni wierzchołek z pierwszym, aby zamknąć cykl
+        int lastNode = currentPath.back();
+        int firstNode = currentPath.front();
+        int lastEdgeWeight = graph[lastNode][firstNode];
 
-                if (score < lowestCost) {
-                    lowestCost= score;
-                    bestPath = currentPath;
+        if (lastEdgeWeight != -1) {  // Jeśli połączenie istnieje
+            score += lastEdgeWeight;
+            currentPath.push_back(firstNode);  // Zamyka cykl
+
+            if (score < lowestCost) {
+                lowestCost= score;
+                bestPath = currentPath;
 
 //                    // Jeśli znaleziono rozwiązanie równe temu z pliku, kończymy algorytm
 //                    if (shortestpath == shortest_path_from_file) {
 //                        //if_ended_by_iterations = false;
 //                        return shortestpath;
 //                    }
-                }
             }
         }
-        i++;
     }
 }
 
@@ -433,3 +422,21 @@ bool AlgorytmyZad3::ifInProcentageOfLowerBound(){
             return false;
     }
 }
+
+
+
+int AlgorytmyZad3::countAbsoluteError() {//blad bezwzgledny
+    if(solutionFromFile != -1)
+        return lowestCost - solutionFromFile;
+    else
+        return -1;
+}
+
+double AlgorytmyZad3::countRelativeError() {
+    if(solutionFromFile != -1)
+        return (static_cast<double>(lowestCost) - static_cast<double>(solutionFromFile))/static_cast<double>(solutionFromFile);
+    else
+        return -1.0;
+}
+
+
