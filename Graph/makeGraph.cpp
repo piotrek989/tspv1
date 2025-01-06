@@ -53,7 +53,7 @@ void makeGraph::writeToFileTimesAndAvg(std::vector<double> times, std::vector<in
                                  std::vector<double> relativeErrors,
                                  std::vector<int> solutions,
                                  double avgTime, double absErrorAvg, double relativeErrorAvg) {
-    std::ofstream file("../Files/output.txt", std::ios::app); // otwieramy plik w trybie dopisywania
+    std::ofstream file("../Files/output1.txt", std::ios::app); // otwieramy plik w trybie dopisywania
 
     if (!file.is_open()) {
         throw std::ios_base::failure("Nie udało się otworzyć pliku output.txt");
@@ -135,6 +135,34 @@ void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density,
         }
     }
 }
+
+void makeGraph::writeMainInfoForExcel(double avgTime, double absErrorAvg, double relativeErrorAvg) {
+    std::ofstream file("../Files/output.txt", std::ios::app); // otwieramy plik w trybie dopisywania
+
+    if (!file.is_open()) {
+        throw std::ios_base::failure("Nie udało się otworzyć pliku output.txt");
+    }
+
+    // Podsumowanie (ostatnia linia)
+    // file << "sredniczas[ms];sredniwzgledny;sredniWzg[%];sredniBezWzg" << std::endl;
+    double avgRelativeErrorPercent = relativeErrorAvg * 100.0;
+    file << std::fixed << std::setprecision(2)
+         << avgTime << ";" << relativeErrorAvg << ";" << avgRelativeErrorPercent << ";"
+         << absErrorAvg << ";" << std::endl;
+
+    file.close();
+}
+
+void makeGraph::writeInitInfoForExcel() {
+    std::ofstream file("../Files/output.txt", std::ios::app); // otwieramy plik w trybie dopisywania
+
+    if (!file.is_open()) {
+        throw std::ios_base::failure("Nie udało się otworzyć pliku output.txt");
+    }
+    file << "sredniczas[ms];sredniwzgledny;sredniWzg[%];sredniBezWzg" << std::endl;
+    file.close();
+}
+
 
 bool makeGraph::isSymetric(std::vector<std::vector<int>>& graph, int V){
     for(int i = 0 ; i < V ; i ++){

@@ -103,6 +103,15 @@ void Program::glownyProgram() {
     int V;
 
     if (ifTesting) {//jesli to sa testy
+        int z = 0;
+        float all = 52;
+        maxCzasAlgorytmow = 3000;//w[ms]
+        potworzeniaAlgorytmow = 5;
+        iterationsToTakeWorse = 1;
+        iterationsWithoutImprove = 1000;
+        procentageOfLowerBound = 0;
+        T_min = 0.00001;
+        T_max = 10000.0;
         std::vector<double> times;
         double avgTime;
         double absErrorAvg;
@@ -110,55 +119,176 @@ void Program::glownyProgram() {
         std::vector<int> absoluteErrors;
         std::vector<double> relativeErrors;
         std::vector<int> solutions;
-        std::vector<std::string> listaInstancji = {"10s", "13s","34a", "65a"};
+        std::vector<std::string> listaInstancji = {"10s", "13s","34a", "65a", "100a"};
+        std::vector<double> alfas = {0.99, 0.995, 0.999};
+        std::vector<bool> ifGeoCooling = {true, false};
+        std::vector<bool> ifInitNN = {true, false};
+        std::vector<bool> ifGenerateSwap = {true, false};
+        std::vector<int> wielkosciListyTabu = {20, 50, 100};
+        std::vector<int> kadencje = {10, 50, 100};
+
+
         makeGraph makegraph;
         Timer timer(maxCzasAlgorytmow);//moj obiekt zegara
         Timer timer2(maxCzasAlgorytmow);
 
-        for (int i = 0 ; i < listaInstancji.size(); i++) {
-            avgTime = 0.0;
-            absErrorAvg = 0.0;
-            relativeErrorAvg = 0.0;
+        makeGraph::writeInitInfoForExcel();
 
-            std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";
-            std::cout<<"Wczytano plik o nazwie: "<<nazwaPojInstancji<<std::endl;
-            makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
-            makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
-            // makeGraph.printGraph(graph);
-            int j;
-            timer2.startCounter();
-            std::cout<<"Alg: SA"<<std::endl;
-            for(j = 0 ; j < potworzeniaAlgorytmow ; j++) {
-                if(timer2.getCounter() > maxCzasAlgorytmow)
-                    break;
-                AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                                  ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
-                timer.startCounter();
-                simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
-                double t1 = timer.getCounter();
-                times.push_back(t1);
-                avgTime += t1;
-                int lowestCost = simulated_annealing.getLowestCost();
-                solutions.push_back(lowestCost);
-                std::cout<<j + 1<<". "<<t1<<"ms, koszt: "<<lowestCost<<std::endl;
+        for(int a = 0 ; a < ifInitNN.size() ; a++) {
+            ifGenerateInitSolutionWithNn = ifInitNN[a];
+            for(int b = 0 ; b < ifGenerateSwap.size() ; b++) {
+                ifGenerateNeighbourhoodWithSwap - ifGenerateSwap[b];
+                ifGeometricCooling = true;
+                for(int c = 0 ; c < alfas.size();c++) {
+                    alfa = alfas[c];
+                    for (int i = 0 ; i < listaInstancji.size(); i++) {
+                        avgTime = 0.0;
+                        absErrorAvg = 0.0;
+                        relativeErrorAvg = 0.0;
 
-                int absoluteError = simulated_annealing.countAbsoluteError();
-                double relError = simulated_annealing.countRelativeError();
-                absErrorAvg += absoluteError;
-                relativeErrorAvg += relError;
-                absoluteErrors.push_back(absoluteError);
-                relativeErrors.push_back(relError);
+                        std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";//pelna nazwa badanej instacji wrazze sciezka
+                        makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
+                        // makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
+                        // makeGraph.printGraph(graph);
+                        int j;
+                        timer2.startCounter();
+                        for(j = 0 ; j < potworzeniaAlgorytmow ; j++) {
+                            if(timer2.getCounter() > maxCzasAlgorytmow)
+                                break;
+                            AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                                              ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                            timer.startCounter();
+                            simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
+                            double t1 = timer.getCounter();
+                            times.push_back(t1);
+                            avgTime += t1;
+                            int lowestCost = simulated_annealing.getLowestCost();
+                            solutions.push_back(lowestCost);
+
+                            int absoluteError = simulated_annealing.countAbsoluteError();
+                            double relError = simulated_annealing.countRelativeError();
+                            absErrorAvg += absoluteError;
+                            relativeErrorAvg += relError;
+                            absoluteErrors.push_back(absoluteError);
+                            relativeErrors.push_back(relError);
+                        }
+                        avgTime /= j;
+                        relativeErrorAvg /= j;
+                        absErrorAvg /= j;
+                        makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);//wpisuje do pliku output1.txt
+                        makeGraph::writeMainInfoForExcel(avgTime, absErrorAvg, relativeErrorAvg);
+                        //czyszczenie
+                        times.clear();
+                        absoluteErrors.clear();
+                        relativeErrors.clear();
+                        solutions.clear();
+                    }
+                    z++;//12opcji
+                    std::cout<<"Postep: "<<(static_cast<double>(z)/all)*100.0<<"/100%"<<std::endl;
+                }
+                ifGeometricCooling = false;//chlodzenie logarytmiczne
+                T_min = 0.5;
+                T_max = 20.0;
+                for (int i = 0 ; i < listaInstancji.size(); i++) {
+                    avgTime = 0.0;
+                    absErrorAvg = 0.0;
+                    relativeErrorAvg = 0.0;
+
+                    std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";//pelna nazwa badanej instacji wrazze sciezka
+                    makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
+                    // makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
+                    // makeGraph.printGraph(graph);
+                    int j;
+                    timer2.startCounter();
+                    for(j = 0 ; j < potworzeniaAlgorytmow ; j++) {
+                        if(timer2.getCounter() > maxCzasAlgorytmow)
+                            break;
+                        AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                                          ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                        timer.startCounter();
+                        simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
+                        double t1 = timer.getCounter();
+                        times.push_back(t1);
+                        avgTime += t1;
+                        int lowestCost = simulated_annealing.getLowestCost();
+                        solutions.push_back(lowestCost);
+
+                        int absoluteError = simulated_annealing.countAbsoluteError();
+                        double relError = simulated_annealing.countRelativeError();
+                        absErrorAvg += absoluteError;
+                        relativeErrorAvg += relError;
+                        absoluteErrors.push_back(absoluteError);
+                        relativeErrors.push_back(relError);
+                    }
+                    avgTime /= j;
+                    relativeErrorAvg /= j;
+                    absErrorAvg /= j;
+                    makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);//wpisuje do pliku output1.txt
+                    makeGraph::writeMainInfoForExcel(avgTime, absErrorAvg, relativeErrorAvg);
+                    //czyszczenie
+                    times.clear();
+                    absoluteErrors.clear();
+                    relativeErrors.clear();
+                    solutions.clear();
+                }
+                z++;//4opcje
+                std::cout<<"Postep: "<<(static_cast<double>(z)/all)*100.0<<"/100%"<<std::endl;
+
+                for(int c = 0 ; c < wielkosciListyTabu.size() ; c++) {
+                    wielkoscListyTabu = wielkosciListyTabu[c];
+                    for(int d = 0 ; d < kadencje.size() ; d++) {
+                        kadencja = kadencje[d];
+                        for (int i = 0 ; i < listaInstancji.size(); i++) {
+                            avgTime = 0.0;
+                            absErrorAvg = 0.0;
+                            relativeErrorAvg = 0.0;
+
+                            std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";//pelna nazwa badanej instacji wrazze sciezka
+                            makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
+                            // makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
+                            // makeGraph.printGraph(graph);
+                            int j;
+                            timer2.startCounter();
+                            for(j = 0 ; j < potworzeniaAlgorytmow ; j++) {
+                                if(timer2.getCounter() > maxCzasAlgorytmow)
+                                    break;
+                                AlgorytmyZad3 tabuSearch(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                                                  ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                                timer.startCounter();
+                                tabuSearch.TS(graph, V, wielkoscListyTabu, kadencja);
+                                double t1 = timer.getCounter();
+                                times.push_back(t1);
+                                avgTime += t1;
+                                int lowestCost = tabuSearch.getLowestCost();
+                                solutions.push_back(lowestCost);
+
+                                int absoluteError = tabuSearch.countAbsoluteError();
+                                double relError = tabuSearch.countRelativeError();
+                                absErrorAvg += absoluteError;
+                                relativeErrorAvg += relError;
+                                absoluteErrors.push_back(absoluteError);
+                                relativeErrors.push_back(relError);
+                            }
+                            avgTime /= j;
+                            relativeErrorAvg /= j;
+                            absErrorAvg /= j;
+                            makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);//wpisuje do pliku output1.txt
+                            makeGraph::writeMainInfoForExcel(avgTime, absErrorAvg, relativeErrorAvg);
+                            //czyszczenie
+                            times.clear();
+                            absoluteErrors.clear();
+                            relativeErrors.clear();
+                            solutions.clear();
+                        }
+                        z++;//36 opcje
+                        std::cout<<"Postep: "<<(static_cast<double>(z)/all)*100.0<<"/100%"<<std::endl;
+                    }
+                }
+
             }
-            avgTime /= j;
-            relativeErrorAvg /= j;
-            absErrorAvg /= j;
-            makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);
-            //czyszczenie
-            times.clear();
-            absoluteErrors.clear();
-            relativeErrors.clear();
-            solutions.clear();
         }
+
+
 
     } else {//jesli to sa zajecia
         int i = 0;
