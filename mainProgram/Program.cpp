@@ -318,6 +318,7 @@ void Program::glownyProgram() {
             double t1 = timer.getCounter();
             std::cout<<std::endl;
             std::cout<<"Wyrzazanie: "<<t1<<"ms, najnizszy koszt: "<<simulated_annealing.getLowestCost()<<std::endl;
+            std::cout<<"Moja sciezka: ";
             for(int j = 0 ; j < simulated_annealing.getBestPath().size() ; j++) {
                 std::cout<<simulated_annealing.getBestPath()[j]<<" ";
             }
@@ -337,10 +338,16 @@ void Program::glownyProgram() {
             double t2 = timer.getCounter();
 
             std::cout<<"Taboo search: "<<t2<<"ms, najnizszy koszt: "<<tabuSearch.getLowestCost()<<std::endl;
+            std::cout<<"Moja sciezka: ";
             for(int j = 0 ; j < tabuSearch.getBestPath().size() ; j++) {
                 std::cout<<tabuSearch.getBestPath()[j]<<" ";
             }
-
+            absError = tabuSearch.countAbsoluteError();
+            relError = tabuSearch.countRelativeError();
+            std::cout<<std::endl;
+            std::cout<<"Bezwzgledny blad: "<<absError<<std::endl;
+            std::cout<<"Wzgledny blad: "<<relError<<std::endl;
+            std::cout<<"Wzgledny w [%]: "<<relError * 100.0<<std::endl;
             std::cout<<std::endl;
 
             i++;

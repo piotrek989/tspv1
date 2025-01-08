@@ -20,14 +20,17 @@ AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWi
 
 
 void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, double T_max, double T_min, double alfa) {
+    int l = 0;
+    std::srand(static_cast<unsigned>(time(0))); // Seed dla generatora liczb pseudolosowych
     if(generateInitSolutionWithNn) {
         repetetiveNearestNeighbour(graph, V);//ustawia mi pola klasy lowest cost i wpisuje najlepsza sciezke
     }else{
         randomMethod(graph, V);
     }
+    int helper = lowestCost;//inicjalizacja helpera
 
     double T;
-    int k = 1;
+    int k = 1;//epoka
     if(ifGeometricCooling) {
         T = T_max;//inicjacja poczatkowej temperatury
     }else{
@@ -42,6 +45,7 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, doub
     std::vector<int> path_a = bestPath;
 
     while (T > T_min && !ifOptimumFound() && !ifInProcentageOfLowerBound()) {
+        helper = lowestCost;
 
         double elapsed_time = timer_.getCounter();
         if (elapsed_time >= timer_.time_limit) {
@@ -53,7 +57,12 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, doub
         if (!ifGeometricCooling)//tylko jesli chlodzenie logarytmiczne
             T = T_max/log(1.0 + static_cast<double>(k));
 
-        pom = path_a;
+        if(generateInitSolutionWithNn)
+            pom = path_a;//to bylo normalnie
+        else
+            pom = bestPath;
+
+
         for(int i = 0 ; i < V - 1; i++) {//odpowiada za generowanie wszystkich kombinacji
             for(int j = i + 1; j < V ; j++) {
                 std::vector<int> tmp_path = pom;
@@ -64,32 +73,43 @@ void AlgorytmyZad3::SAlgorithm(std::vector<std::vector<int>>& graph, int V, doub
                     tmp_cost = twoOpt(graph, V, tmp_path, i , j);
                 }
 
-                if(tmp_cost < lowestCost){
+                if(tmp_cost < lowestCost){//poprawianie najlepszego z najlepszych
+                    // helper = lowestCost;//pomocnik gdy utkienimy w randomie
                     lowestCost = tmp_cost;
                     bestPath = tmp_path;
                 }
-                if (tmp_cost < x_a) {
-                    x_a = tmp_cost;
+                if (tmp_cost < x_a) {//jesli obecnie rozpatrywanae od teraz wygenerowanego(tmp_cost) jest gorsze do poprawa obecnie rozpatrywanego
+                    x_a = tmp_cost;//x_a to najlepsze wygenerowane w sasiedztwie
                     path_a = tmp_path;
-                } else {
+                   } else {
                     auto cost_new = static_cast<double>(tmp_cost);
                     auto cost_old = static_cast<double>(lowestCost);
                     double p = 1.0/(1.0 + std::exp((cost_old - cost_new)/T));
-                    std::srand(static_cast<unsigned>(time(0))); // Seed dla generatora liczb pseudolosowych
                     auto r = static_cast<double>(std::rand()) / static_cast<double>(RAND_MAX);
                         if(r < p) {
-                            //x_a = tmp_cost;
+                            x_a = tmp_cost;//to bylo zakomentowane
                             path_a = tmp_path;
                         }
                 }
             }
+        }
+        if (lowestCost == helper)
+            l++;
+
+        if(!generateInitSolutionWithNn && lowestCost == helper && l > 5) {
+            int hlp = lowestCost;
+            std::vector<int> road = bestPath;
+            randomMethod(graph, V);
+            pom = bestPath;
+            lowestCost = hlp;
+            bestPath = road;
+            l = 0;
         }
 
         if (ifGeometricCooling)//tylko jesli chlodzenie geo
             T *= alfa;
         k++;
     }
-
     //printCostnPath();
 }
 
