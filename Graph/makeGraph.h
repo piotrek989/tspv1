@@ -24,9 +24,22 @@ public:
                                  std::vector<double> relativeErrors,
                                  std::vector<int> solutions,
                                  double avgTime, double absErrorAvg, double relativeErrorAvg);
-    static void writeMainInfoForExcel(double avgTime, double absErrorAvg, double relativeErrorAvg);
+    static void writeMainInfoForExcel(int V, double avgTime, double absErrorAvg, double relativeErrorAvg);
     static void writeInitInfoForExcel();
     static void writeInitInfo(const std::string& nameInputFile, const std::string& typeOfMethod, int solutionFromFile);
+    static void writeInfo1(bool ifGenerateInitSolutionWithNn,
+                           bool ifGenerateNeighbourhoodWithSwap,
+                           bool ifGeometricCooling,
+                           double alfa,
+                           double T_max);
+    static void writeInfo2(bool ifGenerateInitSolutionWithNn,
+                           bool ifGenerateNeighbourhoodWithSwap,
+                           bool ifGeometricCooling,
+                           double T_max);
+    static void writeInfo3(bool ifGenerateInitSolutionWithNn,
+                           bool ifGenerateNeighbourhoodWithSwap,
+                           int wielkoscListyTabu, int kadencja);
+
 };
 
 

@@ -136,7 +136,7 @@ void makeGraph::generateGraph(std::vector<std::vector<int>>& graph, int density,
     }
 }
 
-void makeGraph::writeMainInfoForExcel(double avgTime, double absErrorAvg, double relativeErrorAvg) {
+void makeGraph::writeMainInfoForExcel(int V, double avgTime, double absErrorAvg, double relativeErrorAvg) {
     std::ofstream file("../Files/output.txt", std::ios::app); // otwieramy plik w trybie dopisywania
 
     if (!file.is_open()) {
@@ -146,7 +146,7 @@ void makeGraph::writeMainInfoForExcel(double avgTime, double absErrorAvg, double
     // Podsumowanie (ostatnia linia)
     // file << "sredniczas[ms];sredniwzgledny;sredniWzg[%];sredniBezWzg" << std::endl;
     double avgRelativeErrorPercent = relativeErrorAvg * 100.0;
-    file << std::fixed << std::setprecision(2)
+    file  <<V << ";"<< std::fixed << std::setprecision(2)
          << avgTime << ";" << relativeErrorAvg << ";" << avgRelativeErrorPercent << ";"
          << absErrorAvg << ";" << std::endl;
 
@@ -159,7 +159,7 @@ void makeGraph::writeInitInfoForExcel() {
     if (!file.is_open()) {
         throw std::ios_base::failure("Nie udało się otworzyć pliku output.txt");
     }
-    file << "sredniczas[ms];sredniwzgledny;sredniWzg[%];sredniBezWzg" << std::endl;
+    file << "V;sredniczas[ms];sredniwzgledny;sredniWzg[%];sredniBezWzg" << std::endl;
     file.close();
 }
 
@@ -183,3 +183,69 @@ void makeGraph::printGraph(std::vector<std::vector<int> > &graph) {
         std::cout << "\n";
     }
 }
+
+void makeGraph::writeInfo1(bool ifGenerateInitSolutionWithNn, bool ifGenerateNeighbourhoodWithSwap, bool ifGeometricCooling, double alfa, double T_max) {
+    std::string filePath = "../Files/output.txt";
+
+    // Otwórz plik w trybie dopisywania
+    std::ofstream file(filePath, std::ios::app);
+    if (file.is_open()) {
+        // Dopisz dane w odpowiednim formacie
+        file << "nn: " << (ifGenerateInitSolutionWithNn ? "true" : "false") << " ; "
+             << "neighbourhood: " << (ifGenerateNeighbourhoodWithSwap ? "swap" : "2opt") << " ; "
+             << "cooling: " << (ifGeometricCooling ? "geo" : "log") << " ; "
+             << "alfa: " << alfa << " ; "
+             << "T_max: " << T_max << std::endl;
+
+        file.close();
+    } else {
+        std::cerr << "Nie można otworzyć pliku: " << filePath << std::endl;
+    }
+}
+
+void makeGraph::writeInfo2(bool ifGenerateInitSolutionWithNn,
+                           bool ifGenerateNeighbourhoodWithSwap,
+                           bool ifGeometricCooling,
+                           double T_max) {
+    std::string filePath = "../Files/output.txt";
+
+    // Otwórz plik w trybie dopisywania
+    std::ofstream file(filePath, std::ios::app);
+    if (file.is_open()) {
+        // Dopisz dane w odpowiednim formacie
+        file << "init: " << (ifGenerateInitSolutionWithNn ? "nn" : "random") << " ; "
+        << "neighbourhood: " << (ifGenerateNeighbourhoodWithSwap ? "swap" : "2opt") << " ; "
+            << "cooling: " << (ifGeometricCooling ? "geo" : "log") << " ; "
+             << "T_max: " << T_max << std::endl;
+
+        file.close();
+    } else {
+        std::cerr << "Nie można otworzyć pliku: " << filePath << std::endl;
+    }
+}
+
+void makeGraph::writeInfo3(bool ifGenerateInitSolutionWithNn,
+                           bool ifGenerateNeighbourhoodWithSwap,
+                           int wielkoscListyTabu,
+                           int kadencja) {
+    std::string filePath = "../Files/output.txt";
+
+    // Otwórz plik w trybie dopisywania
+    std::ofstream file(filePath, std::ios::app);
+    if (file.is_open()) {
+        // Dopisz dane w odpowiednim formacie
+        file << "nn: " << (ifGenerateInitSolutionWithNn ? "true" : "false") << " ; "
+            << "neighbourhood: " << (ifGenerateNeighbourhoodWithSwap ? "swap" : "2opt") << " ; "
+             << "tabu list size: " << wielkoscListyTabu << " ; "
+             << "cadence: " << kadencja << std::endl;
+
+        file.close();
+    } else {
+        std::cerr << "Nie można otworzyć pliku: " << filePath << std::endl;
+    }
+}
+
+
+
+
+

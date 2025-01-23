@@ -21,7 +21,7 @@ class Program {
     bool ifGenerateNeighbourhoodWithSwap;
     bool ifGeometricCooling;
     int iterationsWithoutImprove;
-    int iterationsToTakeWorse;
+    int eras;
     double procentageOfLowerBound;
     double T_min;
     double T_max;

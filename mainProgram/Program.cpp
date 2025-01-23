@@ -9,7 +9,7 @@
 
 Program::Program()//lista inicjalizacyjna
     :solutionFromFile(-1),
-     ifTesting(true)//przed zajeciam to zmienic na false
+     ifTesting(false)//przed zajeciam to zmienic na false
 {}
 
 
@@ -38,7 +38,7 @@ void Program::printConfigFile() {
     std::cout << "Kadencja: " << kadencja << std::endl;
     std::cout << "Wielkosc listy tabu: " << wielkoscListyTabu << std::endl;
     std::cout << "Ilosc iteracji bez poprawy: " << iterationsWithoutImprove << std::endl;
-    std::cout << "Ilosc iteracji by wziac gorsze roz: " << iterationsToTakeWorse << std::endl;
+    std::cout << "Ery w SA: " << eras << std::endl;
 }
 
 void Program::wczytanieZPlikuKonfiguracyjnego() {
@@ -89,7 +89,7 @@ void Program::wczytanieZPlikuKonfiguracyjnego() {
     kadencja = std::stoi(konfiguracja["kadencja:"]);
     wielkoscListyTabu = std::stoi(konfiguracja["dlugosc listy tabu:"]);
     iterationsWithoutImprove = std::stoi(konfiguracja["ilosc iteracji bez poprawy:"]);
-    iterationsToTakeWorse = std::stoi(konfiguracja["ilosc iteracji by wziac gorsze rozw:"]);
+    eras = std::stoi(konfiguracja["epoki w SA:"]);
     procentageOfLowerBound = std::stod(konfiguracja["procent dolnego ograniczenia:"]);
     plik.close();
 }
@@ -102,14 +102,20 @@ void Program::glownyProgram() {
     std::vector<std::vector<int>> graph;//nasze dwie glowne zmienne
     int V;
 
+    // ////
+    // makeGraph makegraph;
+    // makegraph.getFromFile(nazwaPlikuWejsciowego, graph, V, solutionFromFile);
+    // int LB = AlgorytmyZad3::Prim(graph);
+    // std::cout<<"LB: "<<LB<<std::endl;
+
     if (ifTesting) {//jesli to sa testy
         int z = 0;
-        float all = 52;
-        maxCzasAlgorytmow = 3000;//w[ms]
+        float all = 84;
+        maxCzasAlgorytmow = 900000;//w[ms]
         potworzeniaAlgorytmow = 5;
-        iterationsToTakeWorse = 1;
-        iterationsWithoutImprove = 1000;
-        procentageOfLowerBound = 0;
+        eras = 1000;//DO EW POPRAWY DO TESTOW
+        iterationsWithoutImprove = 200;
+        procentageOfLowerBound = 2;
         T_min = 0.00001;
         T_max = 10000.0;
         std::vector<double> times;
@@ -119,35 +125,110 @@ void Program::glownyProgram() {
         std::vector<int> absoluteErrors;
         std::vector<double> relativeErrors;
         std::vector<int> solutions;
-        std::vector<std::string> listaInstancji = {"10s", "13s","34a", "65a", "100a"};
+        std::vector<std::string> listaInstancji = {"5s","6s", "7s","8s", "9s", "10s", "11s", "12s","13s",
+                                                    "5a","6a", "7a","8a", "9a", "10a", "11a", "12a","13a",
+                                                    "17a", "34a", "65a", "100a", "171a",
+                                                    "14s", "29s","100s","137s", "150s", "200s"};
         std::vector<double> alfas = {0.99, 0.995, 0.999};
         std::vector<bool> ifGeoCooling = {true, false};
-        std::vector<bool> ifInitNN = {true, false};
+        std::vector<bool> ifInitNN = {false, true};
         std::vector<bool> ifGenerateSwap = {true, false};
         std::vector<int> wielkosciListyTabu = {20, 50, 100};
         std::vector<int> kadencje = {10, 50, 100};
+        std::vector<double> temperatures_max = {1000.0, 10000.0, 100000.0};
+        std::vector<double> temperatures_max_geo = {15.0, 20.0, 30.0};
 
 
         makeGraph makegraph;
         Timer timer(maxCzasAlgorytmow);//moj obiekt zegara
         Timer timer2(maxCzasAlgorytmow);
 
-        makeGraph::writeInitInfoForExcel();
-
         for(int a = 0 ; a < ifInitNN.size() ; a++) {
             ifGenerateInitSolutionWithNn = ifInitNN[a];
+            if(ifGenerateInitSolutionWithNn) {
+                listaInstancji = {"5s","6s", "7s","8s", "9s", "10s", "11s", "12s","13s",
+                                                        "5a","6a", "7a","8a", "9a", "10a", "11a", "12a","13a",
+                                                        "17a", "34a", "65a", "100a", "171a",
+                                                        "14s", "29s","100s","137s", "150s", "200s"};
+            }
             for(int b = 0 ; b < ifGenerateSwap.size() ; b++) {
-                ifGenerateNeighbourhoodWithSwap - ifGenerateSwap[b];
+                ifGenerateNeighbourhoodWithSwap = ifGenerateSwap[b];
                 ifGeometricCooling = true;
                 for(int c = 0 ; c < alfas.size();c++) {
                     alfa = alfas[c];
+                    for(int d = 0  ; d < temperatures_max.size();d++){
+                        T_max = temperatures_max[d];
+                        makeGraph::writeInfo1(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling, alfa, T_max);
+                        makeGraph::writeInitInfoForExcel();
+                        for (int i = 0 ; i < listaInstancji.size(); i++) {
+                            avgTime = 0.0;
+                            absErrorAvg = 0.0;
+                            relativeErrorAvg = 0.0;
+                            std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";//pelna nazwa badanej instacji wrazze sciezka
+                            makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
+                            if(V <= 10) {//dla wiekszych grafow
+                                procentageOfLowerBound = 0;
+                            } else if(V > 10 && V <= 20)
+                                procentageOfLowerBound = 10;
+                            else
+                                procentageOfLowerBound = 20;
+                            int j;
+                            timer2.startCounter();
+                            for(j = 0 ; j < potworzeniaAlgorytmow ; j++) {
+                                if(timer2.getCounter() > maxCzasAlgorytmow)
+                                    break;
+                                AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
+                                                                  ifGeometricCooling, eras, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                                timer.startCounter();
+                                simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
+                                double t1 = timer.getCounter();
+                                times.push_back(t1);
+                                avgTime += t1;
+                                int lowestCost = simulated_annealing.getLowestCost();
+                                solutions.push_back(lowestCost);
+
+                                int absoluteError = simulated_annealing.countAbsoluteError();
+                                double relError = simulated_annealing.countRelativeError();
+                                absErrorAvg += absoluteError;
+                                relativeErrorAvg += relError;
+                                absoluteErrors.push_back(absoluteError);
+                                relativeErrors.push_back(relError);
+                            }
+                            avgTime /= j;
+                            relativeErrorAvg /= j;
+                            absErrorAvg /= j;
+                            makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);//wpisuje do pliku output1.txt
+                            makeGraph::writeMainInfoForExcel(V, avgTime, absErrorAvg, relativeErrorAvg);
+                            //czyszczenie
+                            times.clear();
+                            absoluteErrors.clear();
+                            relativeErrors.clear();
+                            solutions.clear();
+                        }
+                        z++;//36opcji
+                        std::cout<<"Postep: "<<(static_cast<double>(z)/all)*100.0<<"/100%"<<std::endl;
+                    }
+                }
+                for(int e = 0 ; e <  temperatures_max_geo.size();e++) {
+                    T_max = temperatures_max_geo[e];
+                    ifGeometricCooling = false;//chlodzenie logarytmiczne
+                    T_min = 0.1;
+                    makeGraph::writeInfo2(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling, T_max);
+                    makeGraph::writeInitInfoForExcel();
                     for (int i = 0 ; i < listaInstancji.size(); i++) {
+
                         avgTime = 0.0;
                         absErrorAvg = 0.0;
                         relativeErrorAvg = 0.0;
 
                         std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";//pelna nazwa badanej instacji wrazze sciezka
                         makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
+                        if(V <= 10) {//dla wiekszych grafow
+                            procentageOfLowerBound = 2;
+                        } else if(V > 10 && V <= 13)
+                            procentageOfLowerBound = 5;
+                        else
+                            procentageOfLowerBound = 10;
                         // makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
                         // makeGraph.printGraph(graph);
                         int j;
@@ -156,7 +237,7 @@ void Program::glownyProgram() {
                             if(timer2.getCounter() > maxCzasAlgorytmow)
                                 break;
                             AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                                              ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                                                              ifGeometricCooling, eras, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
                             timer.startCounter();
                             simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
                             double t1 = timer.getCounter();
@@ -176,68 +257,23 @@ void Program::glownyProgram() {
                         relativeErrorAvg /= j;
                         absErrorAvg /= j;
                         makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);//wpisuje do pliku output1.txt
-                        makeGraph::writeMainInfoForExcel(avgTime, absErrorAvg, relativeErrorAvg);
+                        makeGraph::writeMainInfoForExcel(V, avgTime, absErrorAvg, relativeErrorAvg);
                         //czyszczenie
                         times.clear();
                         absoluteErrors.clear();
                         relativeErrors.clear();
                         solutions.clear();
                     }
-                    z++;//12opcji
+                    z++;//4opcje
                     std::cout<<"Postep: "<<(static_cast<double>(z)/all)*100.0<<"/100%"<<std::endl;
                 }
-                ifGeometricCooling = false;//chlodzenie logarytmiczne
-                T_min = 0.5;
-                T_max = 20.0;
-                for (int i = 0 ; i < listaInstancji.size(); i++) {
-                    avgTime = 0.0;
-                    absErrorAvg = 0.0;
-                    relativeErrorAvg = 0.0;
-
-                    std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";//pelna nazwa badanej instacji wrazze sciezka
-                    makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
-                    // makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
-                    // makeGraph.printGraph(graph);
-                    int j;
-                    timer2.startCounter();
-                    for(j = 0 ; j < potworzeniaAlgorytmow ; j++) {
-                        if(timer2.getCounter() > maxCzasAlgorytmow)
-                            break;
-                        AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                                          ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
-                        timer.startCounter();
-                        simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
-                        double t1 = timer.getCounter();
-                        times.push_back(t1);
-                        avgTime += t1;
-                        int lowestCost = simulated_annealing.getLowestCost();
-                        solutions.push_back(lowestCost);
-
-                        int absoluteError = simulated_annealing.countAbsoluteError();
-                        double relError = simulated_annealing.countRelativeError();
-                        absErrorAvg += absoluteError;
-                        relativeErrorAvg += relError;
-                        absoluteErrors.push_back(absoluteError);
-                        relativeErrors.push_back(relError);
-                    }
-                    avgTime /= j;
-                    relativeErrorAvg /= j;
-                    absErrorAvg /= j;
-                    makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);//wpisuje do pliku output1.txt
-                    makeGraph::writeMainInfoForExcel(avgTime, absErrorAvg, relativeErrorAvg);
-                    //czyszczenie
-                    times.clear();
-                    absoluteErrors.clear();
-                    relativeErrors.clear();
-                    solutions.clear();
-                }
-                z++;//4opcje
-                std::cout<<"Postep: "<<(static_cast<double>(z)/all)*100.0<<"/100%"<<std::endl;
 
                 for(int c = 0 ; c < wielkosciListyTabu.size() ; c++) {
                     wielkoscListyTabu = wielkosciListyTabu[c];
                     for(int d = 0 ; d < kadencje.size() ; d++) {
                         kadencja = kadencje[d];
+                        makeGraph::writeInfo3(ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, wielkoscListyTabu, kadencja);
+                        makeGraph::writeInitInfoForExcel();
                         for (int i = 0 ; i < listaInstancji.size(); i++) {
                             avgTime = 0.0;
                             absErrorAvg = 0.0;
@@ -245,6 +281,12 @@ void Program::glownyProgram() {
 
                             std::string nazwaPojInstancji = "../Files/file_" + listaInstancji[i] + ".txt";//pelna nazwa badanej instacji wrazze sciezka
                             makegraph.getFromFile(nazwaPojInstancji, graph, V, solutionFromFile);
+                            if(V <= 10) {//dla wiekszych grafow
+                                procentageOfLowerBound = 2;
+                            } else if(V > 10 && V <= 13)
+                                procentageOfLowerBound = 5;
+                            else
+                                procentageOfLowerBound = 10;
                             // makeGraph::writeInitInfo(nazwaPojInstancji, "SA", solutionFromFile);
                             // makeGraph.printGraph(graph);
                             int j;
@@ -253,7 +295,7 @@ void Program::glownyProgram() {
                                 if(timer2.getCounter() > maxCzasAlgorytmow)
                                     break;
                                 AlgorytmyZad3 tabuSearch(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                                                  ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                                                                  ifGeometricCooling, eras, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
                                 timer.startCounter();
                                 tabuSearch.TS(graph, V, wielkoscListyTabu, kadencja);
                                 double t1 = timer.getCounter();
@@ -273,7 +315,7 @@ void Program::glownyProgram() {
                             relativeErrorAvg /= j;
                             absErrorAvg /= j;
                             makeGraph::writeToFileTimesAndAvg(times, absoluteErrors, relativeErrors, solutions, avgTime, absErrorAvg, relativeErrorAvg);//wpisuje do pliku output1.txt
-                            makeGraph::writeMainInfoForExcel(avgTime, absErrorAvg, relativeErrorAvg);
+                            makeGraph::writeMainInfoForExcel(V, avgTime, absErrorAvg, relativeErrorAvg);
                             //czyszczenie
                             times.clear();
                             absoluteErrors.clear();
@@ -312,7 +354,7 @@ void Program::glownyProgram() {
 
             Timer timer(maxCzasAlgorytmow);
             AlgorytmyZad3 simulated_annealing(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap,
-                                              ifGeometricCooling, iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
+                                              ifGeometricCooling, eras, solutionFromFile, iterationsWithoutImprove, procentageOfLowerBound);
             timer.startCounter();
             simulated_annealing.SAlgorithm(graph, V, T_max, T_min, alfa);
             double t1 = timer.getCounter();
@@ -331,7 +373,7 @@ void Program::glownyProgram() {
             std::cout<<std::endl;
             ////////////////////////////////////
             AlgorytmyZad3 tabuSearch(timer, ifGenerateInitSolutionWithNn, ifGenerateNeighbourhoodWithSwap, ifGeometricCooling,
-                                     iterationsToTakeWorse, solutionFromFile, iterationsWithoutImprove,procentageOfLowerBound);
+                                     eras, solutionFromFile, iterationsWithoutImprove,procentageOfLowerBound);
 
             timer.startCounter();
             tabuSearch.TS(graph, V, wielkoscListyTabu, kadencja);

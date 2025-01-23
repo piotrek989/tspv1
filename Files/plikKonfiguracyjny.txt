@@ -1,16 +1,16 @@
-nazwa pliku wejsciowego:../Files/file_100a.txt
+nazwa pliku wejsciowego:../Files/file_65a.txt
 nazwa pliku wyjsciowego:..Files/output.txt
 test z pojedynczego pliku:true
-liczba powtorzen algorytmow:3
-max czas wykonywania algorytmu[ms]:10000
+liczba powtorzen algorytmow:1
+max czas wykonywania algorytmu[ms]:1000
 ilosc iteracji bez poprawy:10000
 procent dolnego ograniczenia:0
-ilosc iteracji by wziac gorsze rozw:1
+epoki w SA:1000
 generowanie poczatkowego rozwiazania nn:false
-generowanie sasiedztwa swapem:true
+generowanie sasiedztwa swapem:false
 chlodzenie geometryczne:true
 T_min:0.00001
-T_max:10000
-alfa:0.999
-dlugosc listy tabu:100
-kadencja:20
+T_max:100000
+alfa:0.9999
+dlugosc listy tabu:200
+kadencja:50

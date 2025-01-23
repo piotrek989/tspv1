@@ -22,7 +22,7 @@ private:
     bool ifGenerateNeighbourhoodWithSwap;
     bool ifGeometricCooling;
     double procentageOfLowerBound;
-    int iterationsToTakeWorse;
+    int eras;
     int iterationsWithoutImprove;
     int solutionFromFile;
     int repetetiveNearestNeighbour(std::vector<std::vector<int>>& graph, int V);
@@ -36,8 +36,12 @@ private:
     void decrementCadency(std::vector<std::pair<std::vector<int>, int>>&tabuList);
     int swapMethod(std::vector<std::vector<int>>& graph, int V, std::vector<int>& temp, int i, int j);
     int twoOpt(std::vector<std::vector<int>>& graph, int V, std::vector<int>& temp, int i, int j);
+    std::vector<int> swap(std::vector<int> old_path, int V);
+    int countingPath(std::vector<int> path, std::vector<std::vector<int>>& graph, int V);
+    std::vector<int> betterTwoOpt(std::vector<int> old_path, int V);
+    int returnRandom(int size);
     bool ifOptimumFound();
-    bool ifInProcentageOfLowerBound();
+    bool ifInProcentageOfLowerBound(int LB);
 public:
     AlgorytmyZad3(Timer&, bool ifStartWithNN, bool ifGenerateWithSwap, bool, int, int, int, double);
     void SAlgorithm(std::vector<std::vector<int>>& graph, int V, double T_max, double T_min, double alfa);
@@ -46,6 +50,7 @@ public:
     std::vector<int> getBestPath();
     double countRelativeError();//blad względny
     int countAbsoluteError();//blad bezwzgledny
+    static int Prim(std::vector<std::vector<int>>& graph);
 };
 
 
