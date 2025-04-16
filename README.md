@@ -1,17 +1,16 @@
-_**Travelling salesman problem**_
+_**Travelling salesman problem 1**_
 
 _**TSP**_ is a classic optimization problem where
 the goal is to find the shortest possible route that visits each city exactly 
-once and returns to the starting point. This project explores several methods to 
-solve TSP, including both brute-force and heuristic approaches.
+once and returns to the starting point.
 
-In first part of this project I was resolving TSP problem with those methods:
-* Brute - Force
-* Nearest - Neighbour
-* Random
-* Depth First Search
-* Breadth First Serach
-* Lowest Cost
+In this repo you can see resolving TSP with those methods:
+* Repetetive Nearest Neighbour
+* Random appraoch
+* Tabu - Search
+* Simulated Annealing
 
-The pdf named _**Raport_1.pdf**_ have time results of each method shown with the usage
-of the graphs. Also there are comparison of those methods.
+The pdf named _**Raport_2.pdf**_ have time results and correctness result
+of each method shown with the usage
+of the graphs. There are algorithms from first and second part of project.
+Also you can find comparison of all those methods.
