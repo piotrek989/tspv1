@@ -6,7 +6,6 @@
 
 #include <climits>
 
-//uwaga dla grafu nieskierowanego alg dziala dobrze bo swapow jest n*(n-1)/2 ale w nieskierowanyn bedzie n*(n-1) ---> do uwaględnienia
 AlgorytmyZad3::AlgorytmyZad3(Timer& timer, bool ifStartWithNN, bool ifGenerateWithSwap, bool ifgeometriColling, int ery, int solFromFile, int iterwithoutimprove,double procOfLowerBoud)
     :timer_(timer),
     generateInitSolutionWithNn(ifStartWithNN),
@@ -212,10 +211,9 @@ int AlgorytmyZad3::nearestNeighbour(std::vector<std::vector<int>>& graph, int V,
         int total_cost = current_cost + last_weight;
         //current_path.push_back(current_path[0]);
 
-        // Update the best path if a better solution is found
         if (total_cost < best_cost) {
             best_cost = total_cost;
-            best_path = current_path;  // Save the current path as the best
+            best_path = current_path;
         }
 
         return best_cost;
@@ -226,9 +224,9 @@ int AlgorytmyZad3::nearestNeighbour(std::vector<std::vector<int>>& graph, int V,
     int minWeight = INT_MAX;
 
     // Select the candidates with the minimum weight
-    for (int v = 0; v < graph[start].size(); ++v) { // Iterujemy po wszystkich wierzchołkach
-        if (!odwiedzone[v] && graph[start][v] != -1) { // Sprawdzamy, czy wierzchołek nieodwiedzony i krawędź istnieje
-            if (graph[start][v] < minWeight) { // Jeśli waga jest mniejsza niż dotychczasowe minimum
+    for (int v = 0; v < graph[start].size(); ++v) {
+        if (!odwiedzone[v] && graph[start][v] != -1) {
+            if (graph[start][v] < minWeight) {
                 minWeight = graph[start][v];
                 candidates.clear();
                 candidates.push_back(v); // Dodajemy wierzchołek jako jedynego kandydata
@@ -256,12 +254,11 @@ int AlgorytmyZad3::nearestNeighbour(std::vector<std::vector<int>>& graph, int V,
 
 
 int AlgorytmyZad3::repetetiveNearestNeighbour(std::vector<std::vector<int>>& graph, int V) {
-    std::vector<bool> odwiedzone(V, false);       // Na początku wszystkie wierzchołki nieodwiedzone
-    int current_cost = 0;                         // Początkowy koszt trasy to 0
-    std::vector<int> current_path;                // Początkowa trasa jest pusta
-    std::vector<int> best_path;                   // Najlepsza trasa, którą chcemy znaleźć
-    int best_cost = INT_MAX;                      // Początkowy najlepszy koszt ustawiony na nieskończonoś
-    //powyzej dane potrzebne do odpalenia rekurecyjnej metody nearestneighbour
+    std::vector<bool> odwiedzone(V, false);// Na początku wszystkie wierzchołki nieodwiedzone
+    int current_cost = 0;
+    std::vector<int> current_path;
+    std::vector<int> best_path;
+    int best_cost = INT_MAX;
 
     int best_weight = -1;//dajemy wartosc ujemna zeby przy pierwszej iteracji zostala ta zmienna nadpisana
     std::vector<int> best_way;
@@ -300,19 +297,18 @@ void AlgorytmyZad3::randomMethod(std::vector<std::vector<int>> &graph, int V) {
         tab_nieodwiedzonych[i] = i;
     }
 
-    std::vector<int> currentPath;  // Ścieżka dla bieżącej iteracji
-    std::vector<int> temp_tab_nieodwiedzonych = tab_nieodwiedzonych;  // Tymczasowa lista wierzchołków do odwiedzenia
+    std::vector<int> currentPath;
+    std::vector<int> temp_tab_nieodwiedzonych = tab_nieodwiedzonych;
     int score = 0;
 
     for (int j = 0; j < V; j++) {
-        std::uniform_int_distribution<> dist(0, temp_tab_nieodwiedzonych.size() - 1);  // losowanie indeksu
-        int randIndex = dist(g);  // generowanie liczby z distribution liczb z zadanego wyżej przedziału
+        std::uniform_int_distribution<> dist(0, temp_tab_nieodwiedzonych.size() - 1);
+        int randIndex = dist(g);
 
         int currentNode = temp_tab_nieodwiedzonych[randIndex];
-        currentPath.push_back(currentNode);  // dodanie wierzchołka do ścieżki
+        currentPath.push_back(currentNode);
 
         if (j > 0) {
-            // Obliczamy wagę krawędzi między bieżącym a poprzednim wierzchołkiem
             int prevNode = currentPath[j - 1];
             int weight = graph[prevNode][currentNode];
 
@@ -325,7 +321,6 @@ void AlgorytmyZad3::randomMethod(std::vector<std::vector<int>> &graph, int V) {
             score += weight;
         }
 
-        // Usuwamy odwiedzony wierzchołek z listy
         temp_tab_nieodwiedzonych.erase(temp_tab_nieodwiedzonych.begin() + randIndex);
     }
 
@@ -370,7 +365,7 @@ int AlgorytmyZad3::getLowestCost() {
 }
 
 int AlgorytmyZad3::swapMethod(std::vector<std::vector<int>> &graph, int V, std::vector<int> &temp, int i, int j) {
-    if(i == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
+    if(i == 0) {
         temp[temp.size() - 1] = temp[j];
     }
     std::swap(temp[i], temp[j]);
@@ -444,10 +439,10 @@ std::vector<int> AlgorytmyZad3::swap(std::vector<int> old_path, int V) {
         a = returnRandom(V);
     }
 
-    if(a == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
+    if(a == 0) {
         old_path[old_path.size() - 1] = old_path[b];
     }
-    if(b == 0) {//jesli zamienieamy pierwszy to musimy tez ostatni (do ostatniego nie dochodzi petla)
+    if(b == 0) {
         old_path[old_path.size() - 1] = old_path[a];
     }
     std::swap(old_path[a], old_path[b]);
@@ -492,7 +487,6 @@ int AlgorytmyZad3::Prim(std::vector<std::vector<int>> &graph) {
     int mst_cost = 0; // Koszt MST
 
     for (int i = 0; i < n; ++i) {
-        // Znajdź nieodwiedzony wierzchołek o najmniejszym koszcie dotarcia
         int u = -1;
         for (int j = 0; j < n; ++j) {
             if (!visited[j] && (u == -1 || min_edge[j] < min_edge[u])) {
@@ -500,7 +494,6 @@ int AlgorytmyZad3::Prim(std::vector<std::vector<int>> &graph) {
             }
         }
 
-        // Jeśli nie ma dostępnych wierzchołków, przerywamy
         if (min_edge[u] == INT_MAX) {
             std::cout << "Graf jest niespójny!" << std::endl;
             return -1;
@@ -517,7 +510,7 @@ int AlgorytmyZad3::Prim(std::vector<std::vector<int>> &graph) {
         }
     }
 
-    return mst_cost; // Zwróć koszt MST
+    return mst_cost;
 }
 
 
