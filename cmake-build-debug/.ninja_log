@@ -1,7 +1,7 @@
 # ninja log v5
 38	293	7593293938066751	CMakeFiles/zadanie_3.dir/mainProgram/Timer.cpp.obj	ff243a0cb4c08d7a
-6	996	7593293945114606	CMakeFiles/zadanie_3.dir/mainProgram/main.cpp.obj	133ac9980fd6662
-31	1258	7593293947713373	CMakeFiles/zadanie_3.dir/Algorithms/AlgorytmyZad3.cpp.obj	ef32a2e475fcb9c1
+52	1289	7665957759744223	CMakeFiles/zadanie_3.dir/Algorithms/AlgorytmyZad3.cpp.obj	ef32a2e475fcb9c1
+28	897	7665957755863044	CMakeFiles/zadanie_3.dir/mainProgram/main.cpp.obj	133ac9980fd6662
 14	1209	7593293947231009	CMakeFiles/zadanie_3.dir/Graph/makeGraph.cpp.obj	ffc7576b6f04034a
+1289	1991	7665957766681581	zadanie_3.exe	8548d85206e5b76b
 21	1577	7593293950906967	CMakeFiles/zadanie_3.dir/mainProgram/Program.cpp.obj	f620be2a72365421
-1577	2185	7593293956899730	zadanie_3.exe	8548d85206e5b76b

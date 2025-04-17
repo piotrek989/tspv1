@@ -1,16 +1,52 @@
-_**Travelling salesman problem 1**_
+# **Travelling Salesman Problem 1**
 
-_**TSP**_ is a classic optimization problem where
-the goal is to find the shortest possible route that visits each city exactly 
-once and returns to the starting point.
+**TSP** is a classic optimization problem where  
+the goal is to find the shortest possible route that visits each city **exactly once**  
+and returns to the **starting point**.
 
-In this repo you can see resolving TSP with those methods:
-* Repetetive Nearest Neighbour
-* Random appraoch
-* Tabu - Search
-* Simulated Annealing
+In this repo, you can see the TSP solved using the following methods:
+- **Repetitive Nearest Neighbour**
+- **Random Approach**
+- **Tabu Search**
+- **Simulated Annealing**
 
-The pdf named _**Raport_2.pdf**_ have time results and correctness result
-of each method shown with the usage
-of the graphs. There are algorithms from first and second part of project.
-Also you can find comparison of all those methods.
+The PDF named **Raport_2.pdf** contains:
+- **Time results**
+- **Correctness evaluations**
+- **Graphical representations** of outcomes
+- **Comparison** between all implemented methods  
+  (Algorithms from both the first and second parts of the project are included.)
+
+---
+
+## 🚀 **How to Run the Project**
+
+1. **Build the project using Clion and CMake**:
+
+    ```bash
+    cmake -B cmake-build-debug
+    cmake --build cmake-build-debug
+    ```
+
+2. **Navigate to the output folder**:
+
+    ```bash
+    cd cmake-build-debug
+    ```
+
+3. **Run the program**:
+
+    ```bash
+    ./zadanie_3.exe
+    ```
+
+Or in Windows command line (CMD), from the main project directory:
+
+1. **Go into cmake-build-debug**
+```cmd
+ cd cmake-build-debug
+```
+2. **Run exe**
+```cmd
+   .\zadanie_3.exe
+```
