@@ -19,7 +19,7 @@ The PDF named **Raport_2.pdf** contains:
 
 ---
 
-## 🚀 **How to Run the Project**
+## **How to Run the Project**
 
 1. **Build the project using Clion and CMake**:
 
